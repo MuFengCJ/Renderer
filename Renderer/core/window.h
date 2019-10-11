@@ -24,8 +24,8 @@ void window_draw_image(Window *window, Image *image);
 
 /* input related functions */
 void input_poll_events(void);
-int input_key_pressed(Window *window, KeyCode key);
-int input_button_pressed(Window *window, Button button);
+bool input_key_pressed(Window *window, KeyCode key);
+bool input_button_pressed(Window *window, Button button);
 void input_query_cursor(Window *window, float *xpos, float *ypos);
 void input_set_callbacks(Window *window, CallBacks callbacks);
 

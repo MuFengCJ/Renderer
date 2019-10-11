@@ -1,6 +1,6 @@
 /**********************************************
 * https://github.com/zauonlok/renderer/blob/v1.2/renderer/platforms/win32.c
-//***********************************************/
+***********************************************/
 
 #include <stdlib.h>
 #include <string.h>
@@ -16,17 +16,18 @@ class Window
  public:
 	HWND handle;
 	HDC memory_dc;
-	Image *surface;
+	Image *buffer;
 	/* common data */
 	bool should_close;
-	char keys[KEY_NUM];
-	char buttons[BUTTON_NUM];
+	bool keys[KEY_NUM]; //whether certain key is pressed
+	bool buttons[BUTTON_NUM]; //whether certain button is pressed
 	CallBacks callbacks;
 	void *userdata;
 };
 
-/* window related functions */
-
+/*************************************
+*  Window related functions 
+*/
 #ifdef UNICODE
 static const wchar_t *WINDOW_CLASS_NAME = L"Class";
 static const wchar_t *WINDOW_ENTRY_NAME = L"Entry";
@@ -39,7 +40,7 @@ static const char *WINDOW_ENTRY_NAME = "Entry";
  * for virtual-key codes, see
  * https://docs.microsoft.com/en-us/windows/desktop/inputdev/virtual-key-codes
  */
-static void handle_key_message(Window *window, WPARAM virtual_key, char pressed) {
+static void handle_key_message(Window *window, WPARAM virtual_key, bool pressed) {
 	KeyCode key;
 	switch (virtual_key) {
 	case 'A':      key = KEY_A;     break;
@@ -57,7 +58,7 @@ static void handle_key_message(Window *window, WPARAM virtual_key, char pressed)
 	}
 }
 
-static void handle_button_message(Window *window, Button button, char pressed) {
+static void handle_button_message(Window *window, Button button, bool pressed) {
 	window->buttons[button] = pressed;
 	if (window->callbacks.button_callback) {
 		window->callbacks.button_callback(window, button, pressed);
@@ -81,27 +82,27 @@ static LRESULT CALLBACK process_message(HWND hWnd, UINT uMsg,
 		return 0;
 	}
 	else if (uMsg == WM_KEYDOWN) {
-		handle_key_message(window, wParam, 1);
+		handle_key_message(window, wParam, true);
 		return 0;
 	}
 	else if (uMsg == WM_KEYUP) {
-		handle_key_message(window, wParam, 0);
+		handle_key_message(window, wParam, false);
 		return 0;
 	}
 	else if (uMsg == WM_LBUTTONDOWN) {
-		handle_button_message(window, BUTTON_L, 1);
+		handle_button_message(window, BUTTON_L, true);
 		return 0;
 	}
 	else if (uMsg == WM_RBUTTONDOWN) {
-		handle_button_message(window, BUTTON_R, 1);
+		handle_button_message(window, BUTTON_R, true);
 		return 0;
 	}
 	else if (uMsg == WM_LBUTTONUP) {
-		handle_button_message(window, BUTTON_L, 0);
+		handle_button_message(window, BUTTON_L, false);
 		return 0;
 	}
 	else if (uMsg == WM_RBUTTONUP) {
-		handle_button_message(window, BUTTON_R, 0);
+		handle_button_message(window, BUTTON_R, false);
 		return 0;
 	}
 	else if (uMsg == WM_MOUSEWHEEL) {
@@ -136,6 +137,7 @@ static void register_class(void) {
 	}
 }
 
+// origin of window is topLeft
 static HWND create_window(const char *title_, int width, int height) {
 	DWORD style = WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX;
 	RECT rect;
@@ -167,15 +169,15 @@ static HWND create_window(const char *title_, int width, int height) {
  * for memory device context, see
  * https://docs.microsoft.com/en-us/windows/desktop/gdi/memory-device-contexts
  */
-static void create_surface(HWND handle, int width, int height,
-	Image **out_surface, HDC *out_memory_dc) {
+static void window_init_buffer(HWND handle, int width, int height,
+	Image **out_buffer, HDC *out_memory_dc) {
 	BITMAPINFOHEADER bi_header;
 	HDC window_dc;
 	HDC memory_dc;
 	HBITMAP dib_bitmap;
 	HBITMAP old_bitmap;
-	unsigned char *buffer;
-	Image *surface;
+	unsigned char *data;
+	Image *buffer;
 
 	window_dc = GetDC(handle);
 	memory_dc = CreateCompatibleDC(window_dc);
@@ -189,38 +191,38 @@ static void create_surface(HWND handle, int width, int height,
 	bi_header.biBitCount = 32;
 	bi_header.biCompression = BI_RGB;
 	dib_bitmap = CreateDIBSection(memory_dc, (BITMAPINFO*)&bi_header,
-		DIB_RGB_COLORS, (void**)&buffer, NULL, 0);
+		DIB_RGB_COLORS, (void**)&data, NULL, 0);
 	assert(dib_bitmap != NULL);
 	old_bitmap = (HBITMAP)SelectObject(memory_dc, dib_bitmap);
 	DeleteObject(old_bitmap);
 
-	surface = (Image*)malloc(sizeof(Image));
-	surface->width = width;
-	surface->height = height;
-	surface->channels = 4;
-	surface->buffer = buffer;
+	buffer = (Image*)malloc(sizeof(Image));
+	buffer->width = width;
+	buffer->height = height;
+	buffer->channels = 4;
+	buffer->data = data;
 
-	*out_surface = surface;
+	*out_buffer = buffer;
 	*out_memory_dc = memory_dc;
 }
 
 Window *window_create(const char *title, int width, int height) {
 	Window *window;
 	HWND handle;
-	Image *surface;
+	Image *buffer;
 	HDC memory_dc;
 
 	assert(width > 0 && height > 0);
 
 	register_class();
 	handle = create_window(title, width, height);
-	create_surface(handle, width, height, &surface, &memory_dc);
+	window_init_buffer(handle, width, height, &buffer, &memory_dc);
 
 	window = (Window*)malloc(sizeof(Window));
 	memset(window, 0, sizeof(Window));
 	window->handle = handle;
 	window->memory_dc = memory_dc;
-	window->surface = surface;
+	window->buffer = buffer;
 	window->should_close = false;
 
 	SetProp(handle, WINDOW_ENTRY_NAME, window);
@@ -235,7 +237,7 @@ void window_destroy(Window *window) {
 	DeleteDC(window->memory_dc);
 	DestroyWindow(window->handle);
 
-	free(window->surface);
+	free(window->buffer);
 	free(window);
 }
 
@@ -251,28 +253,27 @@ void *window_get_userdata(Window *window) {
 	return window->userdata;
 }
 
-static void present_surface(Window *window) {
+static void flush_buffer(Window *window) {
 	HDC window_dc = GetDC(window->handle);
 	HDC memory_dc = window->memory_dc;
-	Image *surface = window->surface;
-	int width = surface->width;
-	int height = surface->height;
+	Image *buffer = window->buffer;
+	int width = buffer->width;
+	int height = buffer->height;
 	BitBlt(window_dc, 0, 0, width, height, memory_dc, 0, 0, SRCCOPY);
 	ReleaseDC(window->handle, window_dc);
 }
 
 void window_draw_image(Window *window, Image *image) {
-	image_blit_bgr(image, window->surface);
-	present_surface(window);
+	image_blit_bgr(image, window->buffer);
+	flush_buffer(window);
 }
 
 //void window_draw_buffer(Window *window, framebuffer_t *buffer) {
-//	private_blit_buffer_bgr(buffer, window->surface);
-//	present_surface(window);
+//	private_blit_buffer_bgr(buffer, window->buffer);
+//	flush_buffer(window);
 //}
 
 /* input related functions */
-
 void input_poll_events(void) {
 	MSG message;
 	while (PeekMessage(&message, NULL, 0, 0, PM_REMOVE)) {
@@ -281,12 +282,12 @@ void input_poll_events(void) {
 	}
 }
 
-int input_key_pressed(Window *window, KeyCode key) {
+bool input_key_pressed(Window *window, KeyCode key) {
 	assert(key >= 0 && key < KEY_NUM);
 	return window->keys[key];
 }
 
-int input_button_pressed(Window *window, Button button) {
+bool input_button_pressed(Window *window, Button button) {
 	assert(button >= 0 && button < BUTTON_NUM);
 	return window->buttons[button];
 }

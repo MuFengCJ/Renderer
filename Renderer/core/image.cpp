@@ -4,8 +4,9 @@
 #include "image.h"
 #include "error.h"
 
-/* helper functions */
-
+/* 
+*  helper functions 
+*/
 static const char *extract_extension(const char *filename) {
 	const char *dot_pos = strrchr(filename, '.');
 	return (dot_pos == NULL) ? "" : dot_pos + 1;
@@ -40,14 +41,15 @@ static void swap_byte(unsigned char *x, unsigned char *y) {
 	*y = t;
 }
 
-static int calc_buffer_size(Image *image) {
+static int calc_data_size(Image *image) {
 	return image->width * image->height * image->channels;
 }
 
-/* image creation/destruction */
-
+/* 
+*  image creation/destruction 
+*/
 Image *image_create(int width, int height, int channels) {
-	int buffer_size = width * height * channels;
+	int data_size = width * height * channels;
 	Image *image;
 
 	FORCE(width > 0 && height > 0 && channels > 0, "image_create: size");
@@ -56,18 +58,19 @@ Image *image_create(int width, int height, int channels) {
 	image->width = width;
 	image->height = height;
 	image->channels = channels;
-	image->buffer = (unsigned char *)malloc(buffer_size);
-	memset(image->buffer, 0, buffer_size);
+	image->data = (unsigned char *)malloc(data_size);
+	memset(image->data, 0, data_size);
 	return image;
 }
 
 void image_release(Image *image) {
-	free(image->buffer);
+	free(image->data);
 	free(image);
 }
 
-/* image input/output */
-
+/* 
+*  image input/output 
+*/
 static Image *load_tga(const char *filename);
 static void save_tga(Image *image, const char *filename);
 
@@ -95,8 +98,8 @@ void image_save(Image *image, const char *filename) {
 static void load_tga_rle(FILE *file, Image *image) {
 	int channels = image->channels;
 	unsigned char *pixel = (unsigned char*)malloc(channels);
-	unsigned char *buffer = image->buffer;
-	int buffer_size = calc_buffer_size(image);
+	unsigned char *buffer = image->data;
+	int buffer_size = calc_data_size(image);
 	int buffer_count = 0;
 	while (buffer_count < buffer_size) {
 		unsigned char header = read_byte(file);
@@ -152,7 +155,7 @@ static Image *load_tga(const char *filename) {
 	FORCE(idlength == 0, "load_tga: idlength");
 	imgtype = header[2];
 	if (imgtype == 2 || imgtype == 3) {           /* uncompressed */
-		read_bytes(file, image->buffer, calc_buffer_size(image));
+		read_bytes(file, image->data, calc_data_size(image));
 	}
 	else if (imgtype == 10 || imgtype == 11) {  /* run-length encoded */
 		load_tga_rle(file, image);
@@ -189,17 +192,18 @@ static void save_tga(Image *image, const char *filename) {
 	header[17] = 0x20;                            /* top-left origin */
 	write_bytes(file, header, TGA_HEADER_SIZE);
 
-	write_bytes(file, image->buffer, calc_buffer_size(image));
+	write_bytes(file, image->data, calc_data_size(image));
 	fclose(file);
 }
 
-/* image processing */
-
+/* 
+*  image processing 
+*/
 unsigned char *image_pixel_ptr(Image *image, int row, int col) {
 	int index = row * image->width * image->channels + col * image->channels;
 	FORCE(row >= 0 && row < image->height, "image_pixel_ptr: row");
 	FORCE(col >= 0 && col < image->width, "image_pixel_ptr: col");
-	return &(image->buffer[index]);
+	return &(image->data[index]);
 }
 
 static void blit_truecolor(Image *src, Image *dst, int swap_rb) {
@@ -212,7 +216,7 @@ static void blit_truecolor(Image *src, Image *dst, int swap_rb) {
 		FATAL("blit_truecolor: dst channels");
 	}
 
-	memset(dst->buffer, 0, calc_buffer_size(dst));
+	memset(dst->data, 0, calc_data_size(dst));
 	for (r = 0; r < src->height && r < dst->height; r++) {
 		for (c = 0; c < src->width && c < dst->width; c++) {
 			unsigned char *src_pixel = image_pixel_ptr(src, r, c);
@@ -304,7 +308,7 @@ void image_resize(Image *image, int width, int height) {
 
 	dst->width = width;
 	dst->height = height;
-	dst->buffer = (unsigned char*)malloc(width * height * channels);
+	dst->data = (unsigned char*)malloc(width * height * channels);
 
 	scale_r = (double)src.height / dst->height;
 	scale_c = (double)src.width / dst->width;
@@ -336,5 +340,5 @@ void image_resize(Image *image, int width, int height) {
 			}
 		}
 	}
-	free(src.buffer);
+	free(src.data);
 }

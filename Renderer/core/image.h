@@ -7,7 +7,7 @@ class Image
 	int width;
 	int height;
 	int channels;
-	unsigned char *buffer;
+	unsigned char *data;
 };
 
 Image *image_create(int width, int height, int channels);
