@@ -127,15 +127,15 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="core\error.cpp" />
     <ClCompile Include="core\image.cpp" />
+    <ClCompile Include="core\utils.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="platform\win32.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="core\error.h" />
     <ClInclude Include="core\image.h" />
     <ClInclude Include="core\matrix.h" />
+    <ClInclude Include="core\utils.h" />
     <ClInclude Include="core\window.h" />
     <ClInclude Include="core\vector.h" />
   </ItemGroup>

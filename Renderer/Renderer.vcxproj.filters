@@ -27,7 +27,7 @@
     <ClCompile Include="platform\win32.cpp">
       <Filter>platform</Filter>
     </ClCompile>
-    <ClCompile Include="core\error.cpp">
+    <ClCompile Include="core\utils.cpp">
       <Filter>core</Filter>
     </ClCompile>
   </ItemGroup>
@@ -44,7 +44,7 @@
     <ClInclude Include="core\window.h">
       <Filter>core</Filter>
     </ClInclude>
-    <ClInclude Include="core\error.h">
+    <ClInclude Include="core\utils.h">
       <Filter>core</Filter>
     </ClInclude>
   </ItemGroup>

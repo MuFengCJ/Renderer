@@ -13,7 +13,7 @@ typedef struct {
 	void(*scroll_callback)(Window *window, float offset);
 } CallBacks;
 
-/* window related functions */
+/* Window related functions */
 Window *window_create(const char *title, int width, int height);
 void window_destroy(Window *window);
 bool window_should_close(Window *window);
@@ -23,14 +23,14 @@ void window_draw_image(Window *window, Image *image);
 //void window_draw_buffer(Window *window, framebuffer_t *buffer);
 
 /* input related functions */
-void input_poll_events(void);
+void input_poll_events();
 bool input_key_pressed(Window *window, KeyCode key);
 bool input_button_pressed(Window *window, Button button);
 void input_query_cursor(Window *window, float *xpos, float *ypos);
 void input_set_callbacks(Window *window, CallBacks callbacks);
 
-/* misc platform functions */
-float platform_get_time(void);
-void platform_init_path(void);
+/* misc functions */
+float get_time();
+void init_path();
 
 #endif
