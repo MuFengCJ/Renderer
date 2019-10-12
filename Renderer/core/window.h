@@ -18,8 +18,8 @@ Window *window_create(const char *title, int width, int height);
 void window_destroy(Window *window);
 bool window_should_close(Window *window);
 void window_set_userdata(Window *window, void *userdata);
-void *window_get_userdata(Window *window);
-void window_draw_image(Window *window, Image *image);
+void *window_userdata(Window *window);
+void window_draw(Window *window, Image *image);
 //void window_draw_buffer(Window *window, framebuffer_t *buffer);
 
 /* input related functions */

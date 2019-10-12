@@ -203,10 +203,10 @@ static void window_init_buffer(HWND handle, int width, int height,
 	DeleteObject(old_bitmap);
 
 	buffer = (Image*)malloc(sizeof(Image));
-	buffer->width = width;
-	buffer->height = height;
-	buffer->channels = 4;
-	buffer->data = data;
+	buffer->set_width(width);
+	buffer->set_height(height);
+	buffer->set_channels(4);
+	buffer->set_data(data);
 
 	out_buffer = buffer;
 	out_memory_dc = memory_dc;
@@ -259,7 +259,7 @@ void window_set_userdata(Window *window, void *userdata)
 	window->userdata = userdata;
 }
 
-void *window_get_userdata(Window *window) 
+void *window_userdata(Window *window)
 {
 	return window->userdata;
 }
@@ -269,13 +269,13 @@ static void flush_buffer(Window *window)
 	HDC window_dc = GetDC(window->handle);
 	HDC memory_dc = window->memory_dc;
 	Image *buffer = window->buffer;
-	int width = buffer->width;
-	int height = buffer->height;
+	int width = buffer->width();
+	int height = buffer->height();
 	BitBlt(window_dc, 0, 0, width, height, memory_dc, 0, 0, SRCCOPY);
 	ReleaseDC(window->handle, window_dc);
 }
 
-void window_draw_image(Window *window, Image *image) 
+void window_draw(Window *window, Image *image)
 {
 	blit_image_bgr(image, window->buffer);
 	flush_buffer(window);

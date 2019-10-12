@@ -3,6 +3,8 @@
 
 #include "image.h"
 
+
+
 /*
 *  load/save image of certain format
 */
@@ -28,12 +30,6 @@ inline const char *get_extension(const char *filename)
 {
 	const char *dot_pos = strrchr(filename, '.');
 	return dot_pos == NULL ? "" : dot_pos + 1;
-}
-
-inline unsigned char *get_pixel(Image *image, int row, int col) 
-{
-	int index = row * image->width * image->channels + col * image->channels;
-	return &(image->data[index]);
 }
 
 
