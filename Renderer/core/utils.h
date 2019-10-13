@@ -1,17 +1,21 @@
 #ifndef UTILS_H
 #define UTILS_H
 
+#include <stdio.h>
 #include "image.h"
 
-
+/*
+*  read/write file
+*/
+UInt8 read_byte(FILE *file);
+void read_bytes(FILE *file, void *buffer, int size);
+void write_bytes(FILE *file, void *buffer, int size);
 
 /*
-*  load/save image of certain format
+*  load/save file of certain format
 */
-Image *load_tga(const char *filename);
-void save_tga(Image *image, const char *filename);
-//texture_t *load_hdr(const char *filename);
-//void save_hdr(texture_t *texture, const char *filename);
+void load_tga(FILE *file, Image *image);
+void save_tga(const Image *image, const char *filePath);
 
 
 /*
@@ -19,8 +23,6 @@ void save_tga(Image *image, const char *filename);
 */
 void blit_image_bgr(Image *src, Image *dst);
 void blit_image_rgb(Image *src, Image *dst);
-//void blit_buffer_bgr(framebuffer_t *source, image_t *target);
-//void blit_buffer_rgb(framebuffer_t *source, image_t *target);
 
 
 /*

@@ -2,6 +2,7 @@
 #define WINDOW_H
 
 #include <Windows.h>
+#include <assert.h>
 #include "image.h"
 
 class Window;
@@ -18,33 +19,57 @@ typedef struct {
 class Window
 {
 public:
-	HWND handle;
-	HDC memory_dc; //memory device context
-	Image *buffer;
+	Window(const char *title, int width, int height);
+	~Window();
+
+	//display function
+	void display() const;
+	void swapBuffer() const;
+	void draw(Image* img) const;
+
+	//input message reponse
+	void poll_events() const;
+	void handle_key_message(WPARAM virtual_key, bool pressed);
+	void handle_button_message(Button button, bool pressed);
+	void handle_scroll_message(float offset);
+
+	// load/save function
+	HWND handle() const { return handle_; }
+	HDC memory_dc() const { return memory_dc_; }
+	int width() const { return width_; }
+	int height() const { return height_; }
+	Image* buffer() const { return back_buffer_; }
+	bool should_close() const { return should_close_; }
+	bool key_pressed(KeyCode key) const { assert(key >= 0 && key < KEY_NUM); return keys_[key]; }
+	bool button_pressed(Button button) const { assert(button >= 0 && button < BUTTON_NUM); return buttons_[button]; }
+	CallBacks callbacks() const { return callbacks_; }
+	void* userdata() const { return userdata_; }
+
+	void set_should_close(bool should_close) { should_close_ = should_close; }
+	void set_callbacks(CallBacks callbacks) { callbacks_ = callbacks; }
+	void set_userdata(void* userdata) { userdata_ = userdata; }
+	
+private:
+	void init_buffer(int width, int height);
+	void reset_buffer() const { memset(back_buffer_->data(), 0, back_buffer_->data_size()); }
+
+	HWND handle_;
+	HDC memory_dc_;     //memory device context
+	UInt8* front_buffer_; //actual pixel space to display on screen, associated with memory_dc_, auto freed by system
+	Image *back_buffer_; //pre-rendered buffer
 
 	/* common data of different platform */
-	bool should_close;
-	bool keys[KEY_NUM]; //whether certain key is pressed
-	bool buttons[BUTTON_NUM]; //whether certain button is pressed
-	CallBacks callbacks;
-	void *userdata;
+	int width_;
+	int height_;
+	bool should_close_;
+	bool keys_[KEY_NUM]; //whether certain key is pressed
+	bool buttons_[BUTTON_NUM]; //whether certain button is pressed
+	CallBacks callbacks_;
+	void *userdata_;
 };
 
-/* Window related functions */
-Window *window_create(const char *title, int width, int height);
-void window_destroy(Window *window);
-bool window_should_close(Window *window);
-void window_set_userdata(Window *window, void *userdata);
-void *window_userdata(Window *window);
-void window_draw(Window *window, Image *image);
-//void window_draw(Window *window, framebuffer_t *buffer);
-
 /* input related functions */
-void input_poll_events();
-bool input_key_pressed(Window *window, KeyCode key);
-bool input_button_pressed(Window *window, Button button);
 void input_query_cursor(Window *window, float *xpos, float *ypos);
-void input_set_callbacks(Window *window, CallBacks callbacks);
 
 /* misc functions */
 float get_time();

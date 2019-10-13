@@ -2,26 +2,11 @@
 * https://github.com/zauonlok/renderer/blob/v1.2/renderer/platforms/win32.c
 ***********************************************/
 
-#include <assert.h>
 #include <direct.h>
 #include "../core/window.h"
 #include "../core/image.h"
 #include "../core/utils.h"
 
-//class Window 
-//{
-// public:
-//	HWND handle;
-//	HDC memory_dc; //memory device context
-//	Image *buffer;
-//
-//	/* common data of different platform */
-//	bool should_close;
-//	bool keys[KEY_NUM]; //whether certain key is pressed
-//	bool buttons[BUTTON_NUM]; //whether certain button is pressed
-//	CallBacks callbacks;
-//	void *userdata;
-//};
 
 /*************************************
 *  Window related functions 
@@ -38,7 +23,7 @@ static const char *WINDOW_ENTRY_NAME = "Entry";
  * for virtual-key codes, see
  * https://docs.microsoft.com/en-us/windows/desktop/inputdev/virtual-key-codes
  */
-static void handle_key_message(Window *window, WPARAM virtual_key, bool pressed) 
+void Window::handle_key_message(WPARAM virtual_key, bool pressed) 
 {
 	KeyCode key;
 	switch (virtual_key) {
@@ -50,25 +35,25 @@ static void handle_key_message(Window *window, WPARAM virtual_key, bool pressed)
 	default:       key = KEY_NUM;   break;
 	}
 	if (key < KEY_NUM) {
-		window->keys[key] = pressed;
-		if (window->callbacks.key_callback) {
-			window->callbacks.key_callback(window, key, pressed);
+		keys_[key] = pressed;
+		if (callbacks_.key_callback) {
+			callbacks_.key_callback(this, key, pressed);
 		}
 	}
 }
 
-static void handle_button_message(Window *window, Button button, bool pressed) 
+void Window::handle_button_message(Button button, bool pressed) 
 {
-	window->buttons[button] = pressed;
-	if (window->callbacks.button_callback) {
-		window->callbacks.button_callback(window, button, pressed);
+	buttons_[button] = pressed;
+	if (callbacks_.button_callback) {
+		callbacks_.button_callback(this, button, pressed);
 	}
 }
 
-static void handle_scroll_message(Window *window, float offset) 
+void Window::handle_scroll_message(float offset) 
 {
-	if (window->callbacks.scroll_callback) {
-		window->callbacks.scroll_callback(window, offset);
+	if (callbacks_.scroll_callback) {
+		callbacks_.scroll_callback(this, offset);
 	}
 }
 
@@ -80,36 +65,36 @@ static LRESULT CALLBACK process_message(HWND hWnd, UINT uMsg,
 		return DefWindowProc(hWnd, uMsg, wParam, lParam);
 	}
 	else if (uMsg == WM_CLOSE) {
-		window->should_close = true;
+		window->set_should_close(true);
 		return 0;
 	}
 	else if (uMsg == WM_KEYDOWN) {
-		handle_key_message(window, wParam, true);
+		window->handle_key_message(wParam, true);
 		return 0;
 	}
 	else if (uMsg == WM_KEYUP) {
-		handle_key_message(window, wParam, false);
+		window->handle_key_message(wParam, false);
 		return 0;
 	}
 	else if (uMsg == WM_LBUTTONDOWN) {
-		handle_button_message(window, BUTTON_L, true);
+		window->handle_button_message(BUTTON_L, true);
 		return 0;
 	}
 	else if (uMsg == WM_RBUTTONDOWN) {
-		handle_button_message(window, BUTTON_R, true);
+		window->handle_button_message(BUTTON_R, true);
 		return 0;
 	}
 	else if (uMsg == WM_LBUTTONUP) {
-		handle_button_message(window, BUTTON_L, false);
+		window->handle_button_message(BUTTON_L, false);
 		return 0;
 	}
 	else if (uMsg == WM_RBUTTONUP) {
-		handle_button_message(window, BUTTON_R, false);
+		window->handle_button_message(BUTTON_R, false);
 		return 0;
 	}
 	else if (uMsg == WM_MOUSEWHEEL) {
 		float offset = GET_WHEEL_DELTA_WPARAM(wParam) / (float)WHEEL_DELTA;
-		handle_scroll_message(window, offset);
+		window->handle_scroll_message(offset);
 		return 0;
 	}
 	else {
@@ -173,14 +158,15 @@ static HWND create_window(const char *title_, int width, int height)
  * for memory device context, see
  * https://docs.microsoft.com/en-us/windows/desktop/gdi/memory-device-contexts
  */
-static void window_init_buffer(HWND handle, int width, int height,
-	Image* &out_buffer, HDC &out_memory_dc) 
+void Window::init_buffer(int width, int height)
 {
-	unsigned char *data;
+	back_buffer_ = new Image(width, height, 4);
 
-	HDC window_dc = GetDC(handle);
-	HDC memory_dc = CreateCompatibleDC(window_dc);
-	ReleaseDC(handle, window_dc);
+	UInt8* data;
+
+	HDC window_dc = GetDC(handle_);
+	memory_dc_ = CreateCompatibleDC(window_dc);
+	ReleaseDC(handle_, window_dc);
 
 	BITMAPINFOHEADER bi_header;
 	memset(&bi_header, 0, sizeof(BITMAPINFOHEADER));
@@ -190,93 +176,70 @@ static void window_init_buffer(HWND handle, int width, int height,
 	bi_header.biPlanes = 1;
 	bi_header.biBitCount = 32;
 	bi_header.biCompression = BI_RGB;
-	HBITMAP dib_bitmap = CreateDIBSection(memory_dc, (BITMAPINFO*)&bi_header,
+	HBITMAP dib_bitmap = CreateDIBSection(memory_dc_, (BITMAPINFO*)&bi_header,
 		DIB_RGB_COLORS, (void**)&data, NULL, 0);
 	assert(dib_bitmap != NULL);
-	HBITMAP old_bitmap = (HBITMAP)SelectObject(memory_dc, dib_bitmap);
+	HBITMAP old_bitmap = (HBITMAP)SelectObject(memory_dc_, dib_bitmap);
 	DeleteObject(old_bitmap);
 
-	out_buffer = new Image(width, height, 4);
-	out_buffer->set_data(data);
-	out_memory_dc = memory_dc;
+	front_buffer_ = data;
 }
 
-Window *window_create(const char *title, int width, int height) 
+Window::Window(const char *title, int width, int height)
 {
 	assert(width > 0 && height > 0);
+	width_ = width;
+	height_ = height;
 
 	register_class();
 
-	HWND handle = create_window(title, width, height);
-	Image *buffer;
-	HDC memory_dc;
-	window_init_buffer(handle, width, height, buffer, memory_dc);
+	handle_ = create_window(title, width, height);
+	init_buffer(width, height);
+	should_close_ = false;
 
-	Window* window = new Window();
-	window->handle = handle;
-	window->memory_dc = memory_dc;
-	window->buffer = buffer;
-	window->should_close = false;
-
-	SetProp(handle, WINDOW_ENTRY_NAME, window);
-	ShowWindow(handle, SW_SHOW);
-	return window;
+	SetProp(handle_, WINDOW_ENTRY_NAME, this);
+	ShowWindow(handle_, SW_SHOW);
 }
 
-void window_destroy(Window *window) 
+Window::~Window()
 {
-	ShowWindow(window->handle, SW_HIDE);
-	RemoveProp(window->handle, WINDOW_ENTRY_NAME);
+	ShowWindow(handle_, SW_HIDE);
+	RemoveProp(handle_, WINDOW_ENTRY_NAME);
 
-	DeleteDC(window->memory_dc);
-	DestroyWindow(window->handle);
+	DeleteDC(memory_dc_);
+	DestroyWindow(handle_);
 
-	delete window->buffer;
-	delete window;
+	delete back_buffer_;
 }
 
-bool window_should_close(Window *window) 
+void Window::display() const
 {
-	return window->should_close;
+	HDC window_dc = GetDC(handle_);
+	int width = back_buffer_->width();
+	int height = back_buffer_->height();
+	BitBlt(window_dc, 0, 0, width, height, memory_dc_, 0, 0, SRCCOPY);
+	ReleaseDC(handle_, window_dc);
 }
 
-void window_set_userdata(Window *window, void *userdata) 
+void Window::swapBuffer() const
 {
-	window->userdata = userdata;
+	int dataSize = width_ * height_ * back_buffer_->channels();
+	memcpy(front_buffer_, back_buffer_->data(), dataSize);
 }
 
-void *window_userdata(Window *window)
+void Window::draw(Image *image) const
 {
-	return window->userdata;
+	reset_buffer();
+	blit_image_bgr(image, back_buffer_);
+	swapBuffer();
+	display();
 }
-
-static void flush_buffer(Window *window) 
-{
-	HDC window_dc = GetDC(window->handle);
-	HDC memory_dc = window->memory_dc;
-	Image *buffer = window->buffer;
-	int width = buffer->width();
-	int height = buffer->height();
-	BitBlt(window_dc, 0, 0, width, height, memory_dc, 0, 0, SRCCOPY);
-	ReleaseDC(window->handle, window_dc);
-}
-
-void window_draw(Window *window, Image *image)
-{
-	blit_image_bgr(image, window->buffer);
-	flush_buffer(window);
-}
-
-//void window_draw_buffer(Window *window, framebuffer_t *buffer) {
-//	private_blit_buffer_bgr(buffer, window->buffer);
-//	flush_buffer(window);
-//}
 
 
 /*************************************
 *  input related functions 
 **************************************/
-void input_poll_events() 
+void Window::poll_events() const
 {
 	MSG message;
 	while (PeekMessage(&message, NULL, 0, 0, PM_REMOVE)) {
@@ -285,30 +248,14 @@ void input_poll_events()
 	}
 }
 
-bool input_key_pressed(Window *window, KeyCode key) 
-{
-	assert(key >= 0 && key < KEY_NUM);
-	return window->keys[key];
-}
-
-bool input_button_pressed(Window *window, Button button) 
-{
-	assert(button >= 0 && button < BUTTON_NUM);
-	return window->buttons[button];
-}
 
 void input_query_cursor(Window *window, float *xpos, float *ypos) 
 {
 	POINT point;
 	GetCursorPos(&point);
-	ScreenToClient(window->handle, &point);
+	ScreenToClient(window->handle(), &point);
 	*xpos = (float)point.x;
 	*ypos = (float)point.y;
-}
-
-void input_set_callbacks(Window *window, CallBacks callbacks) 
-{
-	window->callbacks = callbacks;
 }
 
 

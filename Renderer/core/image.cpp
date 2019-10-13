@@ -3,12 +3,25 @@
 #include "image.h"
 #include "utils.h"
 
-Image::Image(int width, int height, int channels) : width_(width), height_(height), channels_(channels)
+Image::Image(int width, int height, int channels)
 {
 	assert(width > 0 && height > 0 && channels >= 1 && channels <= 4);
+	width_ = width;
+	height_ = height;
+	channels_ = channels;
+
 	int data_size = width * height * channels;
 	data_ = new UInt8[data_size];
 	memset(data_, 0, data_size);
+}
+
+Image::Image(int width, int height, int channels, UInt8* data)
+{
+	assert(width > 0 && height > 0 && channels >= 1 && channels <= 4 && data != NULL);
+	width_ = width;
+	height_ = height;
+	channels_ = channels;
+	data_ = data;
 }
 
 Image::Image(const Image& image)
@@ -47,85 +60,6 @@ void Image::operator=(const Image& image)
 /*
 *  tga format
 */
-static inline UInt8 read_byte(FILE *file)
-{
-	int byte = fgetc(file);
-	assert(byte != EOF);
-	return (unsigned char)byte;
-}
-
-static inline void read_bytes(FILE *file, void *buffer, int size)
-{
-	int count = (int)fread(buffer, 1, size, file);
-	assert(count == size);
-}
-
-static inline void write_bytes(FILE *file, void *buffer, int size)
-{
-	int count = (int)fwrite(buffer, 1, size, file);
-	assert(count == size);
-}
-
-static inline int get_buffer_size(Image *image)
-{
-	return image->width() * image->height() * image->channels();
-}
-
-static void load_tga_rle(FILE *file, Image *image)
-{
-	unsigned char *buffer = image->data();
-	int channels = image->channels();
-	int buffer_size = get_buffer_size(image);
-	int elem_count = 0;
-	while (elem_count < buffer_size) {
-		unsigned char header = read_byte(file);
-		int rle_packet = header & 0x80;
-		int pixel_count = (header & 0x7F) + 1;
-		unsigned char pixel[4];
-		int i, j;
-		assert(elem_count + pixel_count * channels <= buffer_size);
-		if (rle_packet) {  /* rle packet */
-			for (j = 0; j < channels; j++) {
-				pixel[j] = read_byte(file);
-			}
-			for (i = 0; i < pixel_count; i++) {
-				for (j = 0; j < channels; j++) {
-					buffer[elem_count++] = pixel[j];
-				}
-			}
-		}
-		else {           /* raw packet */
-			for (i = 0; i < pixel_count; i++) {
-				for (j = 0; j < channels; j++) {
-					buffer[elem_count++] = read_byte(file);
-				}
-			}
-		}
-	}
-	assert(elem_count == buffer_size);
-}
-
-void save_tga(Image *image, const char *filename)
-{
-	unsigned char header[TGA_HEADER_SIZE];
-	FILE *file;
-
-	file = fopen(filename, "wb");
-	assert(file != NULL);
-
-	memset(header, 0, TGA_HEADER_SIZE);
-	header[2] = image->channels() == 1 ? 3 : 2;     /* image type */
-	header[12] = image->width() & 0xFF;             /* width, lsb */
-	header[13] = (image->width() >> 8) & 0xFF;      /* width, msb */
-	header[14] = image->height() & 0xFF;            /* height, lsb */
-	header[15] = (image->height() >> 8) & 0xFF;     /* height, msb */
-	header[16] = (image->channels() * 8) & 0xFF;    /* image depth */
-	write_bytes(file, header, TGA_HEADER_SIZE);
-
-	write_bytes(file, image->data(), get_buffer_size(image));
-	fclose(file);
-}
-
 void Image::loadFromTGA(const char *filePath)
 {
 	unsigned char header[TGA_HEADER_SIZE];
@@ -149,10 +83,10 @@ void Image::loadFromTGA(const char *filePath)
 	assert(idlength == 0);
 	imgtype = header[2];
 	if (imgtype == 2 || imgtype == 3) {           /* uncompressed */
-		read_bytes(file, loadIMG.data(), get_buffer_size(&loadIMG));
+		read_bytes(file, loadIMG.data(), loadIMG.data_size());
 	}
 	else if (imgtype == 10 || imgtype == 11) {  /* run-length encoded */
-		load_tga_rle(file, &loadIMG);
+		load_tga(file, &loadIMG);
 	}
 	else {
 		assert(0);
@@ -185,7 +119,7 @@ void Image::saveAsFile(const char *filePath) const
 {
 	const char *ext = get_extension(filePath);
 	if (strcmp(ext, "tga") == 0) {
-		//save_tga(image, filePath);
+		save_tga(this, filePath);
 	}
 	else {
 		assert(0);
