@@ -2,27 +2,26 @@
 * https://github.com/zauonlok/renderer/blob/v1.2/renderer/platforms/win32.c
 ***********************************************/
 
-#include <Windows.h>
 #include <assert.h>
 #include <direct.h>
 #include "../core/window.h"
 #include "../core/image.h"
 #include "../core/utils.h"
 
-class Window 
-{
- public:
-	HWND handle;
-	HDC memory_dc; //memory device context
-	Image *buffer;
-
-	/* common data of different platform */
-	bool should_close;
-	bool keys[KEY_NUM]; //whether certain key is pressed
-	bool buttons[BUTTON_NUM]; //whether certain button is pressed
-	CallBacks callbacks;
-	void *userdata;
-};
+//class Window 
+//{
+// public:
+//	HWND handle;
+//	HDC memory_dc; //memory device context
+//	Image *buffer;
+//
+//	/* common data of different platform */
+//	bool should_close;
+//	bool keys[KEY_NUM]; //whether certain key is pressed
+//	bool buttons[BUTTON_NUM]; //whether certain button is pressed
+//	CallBacks callbacks;
+//	void *userdata;
+//};
 
 /*************************************
 *  Window related functions 
@@ -177,18 +176,13 @@ static HWND create_window(const char *title_, int width, int height)
 static void window_init_buffer(HWND handle, int width, int height,
 	Image* &out_buffer, HDC &out_memory_dc) 
 {
-	BITMAPINFOHEADER bi_header;
-	HDC window_dc;
-	HDC memory_dc;
-	HBITMAP dib_bitmap;
-	HBITMAP old_bitmap;
 	unsigned char *data;
-	Image *buffer;
 
-	window_dc = GetDC(handle);
-	memory_dc = CreateCompatibleDC(window_dc);
+	HDC window_dc = GetDC(handle);
+	HDC memory_dc = CreateCompatibleDC(window_dc);
 	ReleaseDC(handle, window_dc);
 
+	BITMAPINFOHEADER bi_header;
 	memset(&bi_header, 0, sizeof(BITMAPINFOHEADER));
 	bi_header.biSize = sizeof(BITMAPINFOHEADER);
 	bi_header.biWidth = width;
@@ -196,37 +190,29 @@ static void window_init_buffer(HWND handle, int width, int height,
 	bi_header.biPlanes = 1;
 	bi_header.biBitCount = 32;
 	bi_header.biCompression = BI_RGB;
-	dib_bitmap = CreateDIBSection(memory_dc, (BITMAPINFO*)&bi_header,
+	HBITMAP dib_bitmap = CreateDIBSection(memory_dc, (BITMAPINFO*)&bi_header,
 		DIB_RGB_COLORS, (void**)&data, NULL, 0);
 	assert(dib_bitmap != NULL);
-	old_bitmap = (HBITMAP)SelectObject(memory_dc, dib_bitmap);
+	HBITMAP old_bitmap = (HBITMAP)SelectObject(memory_dc, dib_bitmap);
 	DeleteObject(old_bitmap);
 
-	buffer = (Image*)malloc(sizeof(Image));
-	buffer->set_width(width);
-	buffer->set_height(height);
-	buffer->set_channels(4);
-	buffer->set_data(data);
-
-	out_buffer = buffer;
+	out_buffer = new Image(width, height, 4);
+	out_buffer->set_data(data);
 	out_memory_dc = memory_dc;
 }
 
 Window *window_create(const char *title, int width, int height) 
 {
-	Window *window;
-	HWND handle;
-	Image *buffer;
-	HDC memory_dc;
-
 	assert(width > 0 && height > 0);
 
 	register_class();
-	handle = create_window(title, width, height);
+
+	HWND handle = create_window(title, width, height);
+	Image *buffer;
+	HDC memory_dc;
 	window_init_buffer(handle, width, height, buffer, memory_dc);
 
-	window = (Window*)malloc(sizeof(Window));
-	memset(window, 0, sizeof(Window));
+	Window* window = new Window();
 	window->handle = handle;
 	window->memory_dc = memory_dc;
 	window->buffer = buffer;
@@ -245,8 +231,8 @@ void window_destroy(Window *window)
 	DeleteDC(window->memory_dc);
 	DestroyWindow(window->handle);
 
-	free(window->buffer);
-	free(window);
+	delete window->buffer;
+	delete window;
 }
 
 bool window_should_close(Window *window) 

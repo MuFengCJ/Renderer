@@ -5,10 +5,12 @@
 
 Image::Image(int width, int height, int channels) : width_(width), height_(height), channels_(channels)
 {
+	assert(width > 0 && height > 0 && channels >= 1 && channels <= 4);
 	int data_size = width * height * channels;
-	data_ = (unsigned char *)malloc(data_size);
+	data_ = new UInt8[data_size];
 	memset(data_, 0, data_size);
 }
+
 Image::Image(const Image& image)
 {
 	width_ = image.width_;
@@ -16,12 +18,13 @@ Image::Image(const Image& image)
 	channels_ = image.channels_;
 
 	int data_size = width_ * height_ * channels_;
-	data_ = (unsigned char *)malloc(data_size);
+	data_ = new UInt8[data_size];
 	memcpy(data_, image.data_, data_size);
 }
+
 Image::~Image()
 {
-	free(data_);
+	delete[] data_;
 }
 
 void Image::operator=(const Image& image)
@@ -30,10 +33,10 @@ void Image::operator=(const Image& image)
 	height_ = image.height_;
 	channels_ = image.channels_;
 
-	free(data_); //release resource before change it
+	delete[] data_; //release resourcePtr before change it
 
 	int data_size = width_ * height_ * channels_;
-	data_ = (unsigned char *)malloc(data_size);
+	data_ = new UInt8[data_size];
 	memcpy(data_, image.data_, data_size);
 }
 
@@ -44,7 +47,7 @@ void Image::operator=(const Image& image)
 /*
 *  tga format
 */
-static inline unsigned char read_byte(FILE *file)
+static inline UInt8 read_byte(FILE *file)
 {
 	int byte = fgetc(file);
 	assert(byte != EOF);
@@ -166,6 +169,7 @@ void Image::loadFromTGA(const char *filePath)
 	
 	(*this) = loadIMG;
 }
+
 void Image::loadFromFile(const char *filePath)
 {
 	const char *ext = get_extension(filePath);
@@ -192,9 +196,9 @@ void Image::saveAsFile(const char *filePath) const
 /* 
 *  image processing 
 */
-static inline void swap_byte(unsigned char *x, unsigned char *y) 
+static inline void swap_byte(UInt8 *x, UInt8 *y)
 {
-	unsigned char t = *x;
+	UInt8 t = *x;
 	*x = *y;
 	*y = t;
 }
