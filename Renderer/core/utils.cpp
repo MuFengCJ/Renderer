@@ -2,7 +2,7 @@
 #include <algorithm>
 #include "utils.h"
 
-UInt8 read_byte(FILE *file)
+Byte read_byte(FILE *file)
 {
 	int byte = fgetc(file);
 	assert(byte != EOF);
@@ -23,15 +23,15 @@ void write_bytes(FILE *file, void *buffer, int size)
 
 void load_tga(FILE *file, Image *image)
 {
-	unsigned char *buffer = image->data();
+	Byte *buffer = image->data();
 	int channels = image->channels();
 	int buffer_size = image->data_size();
 	int elem_count = 0;
 	while (elem_count < buffer_size) {
-		unsigned char header = read_byte(file);
+		Byte header = read_byte(file);
 		int rle_packet = header & 0x80;
 		int pixel_count = (header & 0x7F) + 1;
-		unsigned char pixel[4];
+		Byte pixel[4];
 		int i, j;
 		assert(elem_count + pixel_count * channels <= buffer_size);
 		if (rle_packet) {  /* rle packet */
@@ -57,7 +57,7 @@ void load_tga(FILE *file, Image *image)
 
 void save_tga(const Image *image, const char *filePath)
 {
-	unsigned char header[TGA_HEADER_SIZE];
+	Byte header[TGA_HEADER_SIZE];
 	FILE *file;
 
 	file = fopen(filePath, "wb");
@@ -83,57 +83,55 @@ void save_tga(const Image *image, const char *filePath)
 /*
 *  blit image data
 */
-void blit_image_bgr(Image *src, Image *dst) 
+void blit_image_bgr(Image *src, int buffer_width, int buffer_height, Byte* buffer)
 {
-	int width = std::min(src->width(), dst->width());
-	int height = std::min(src->height(), dst->height());
+	int width = std::min(src->width(), buffer_width);
+	int height = std::min(src->height(), buffer_height);
 	int row, col;
 
 	assert(width > 0 && height > 0);
 	assert(src->channels() >= 1 && src->channels() <= 4);
-	assert(dst->channels() == 3 || dst->channels() == 4);
 
 	for (row = 0; row < height; row++) {
 		for (col = 0; col < width; col++) {
 			int flipped_row = src->height() - 1 - row;
-			unsigned char *src_pixel = src->get_pixel(flipped_row, col);
-			unsigned char *dst_pixel = dst->get_pixel(row, col);
+			Byte *src_pixel = src->get_pixel(flipped_row, col);
+			int dst_pixel_index = row * buffer_width * 4 + col * 4;
 			if (src->channels() == 3 || src->channels() == 4) {
-				dst_pixel[0] = src_pixel[0];  /* blue */
-				dst_pixel[1] = src_pixel[1];  /* green */
-				dst_pixel[2] = src_pixel[2];  /* red */
+				buffer[dst_pixel_index + 0] = src_pixel[0];  /* blue */
+				buffer[dst_pixel_index + 1] = src_pixel[1];  /* green */
+				buffer[dst_pixel_index + 2] = src_pixel[2];  /* red */
 			}
 			else {
-				unsigned char gray = src_pixel[0];
-				dst_pixel[0] = dst_pixel[1] = dst_pixel[2] = gray;
+				Byte gray = src_pixel[0];
+				buffer[dst_pixel_index + 0] = buffer[dst_pixel_index + 1] = buffer[dst_pixel_index + 2] = gray;
 			}
 		}
 	}
 }
 
-void blit_image_rgb(Image *src, Image *dst) 
+void blit_image_rgb(Image *src, int buffer_width, int buffer_height, Byte* buffer)
 {
-	int width = std::min(src->width(), dst->width());
-	int height = std::min(src->height(), dst->height());
+	int width = std::min(src->width(), buffer_width);
+	int height = std::min(src->height(), buffer_height);
 	int row, col;
 
 	assert(width > 0 && height > 0);
 	assert(src->channels() >= 1 && src->channels() <= 4);
-	assert(dst->channels() == 3 || dst->channels() == 4);
 
 	for (row = 0; row < height; row++) {
 		for (col = 0; col < width; col++) {
 			int flipped_row = src->height() - 1 - row;
-			unsigned char *src_pixel = src->get_pixel(flipped_row, col);
-			unsigned char *dst_pixel = dst->get_pixel(row, col);
+			Byte *src_pixel = src->get_pixel(flipped_row, col);
+			int dst_pixel_index = row * buffer_width * 4 + col * 4;
 			if (src->channels() == 3 || src->channels() == 4) {
-				dst_pixel[0] = src_pixel[2];  /* red */
-				dst_pixel[1] = src_pixel[1];  /* green */
-				dst_pixel[2] = src_pixel[0];  /* blue */
+				buffer[dst_pixel_index + 2] = src_pixel[0];  /* red */
+				buffer[dst_pixel_index + 1] = src_pixel[1];  /* green */
+				buffer[dst_pixel_index + 0] = src_pixel[2];  /* blue */
 			}
 			else {
-				unsigned char gray = src_pixel[0];
-				dst_pixel[0] = dst_pixel[1] = dst_pixel[2] = gray;
+				Byte gray = src_pixel[0];
+				buffer[dst_pixel_index + 0] = buffer[dst_pixel_index + 1] = buffer[dst_pixel_index + 2] = gray;
 			}
 		}
 	}

@@ -23,22 +23,16 @@ public:
 	~Window();
 
 	//display function
-	void display() const;
-	void swapBuffer() const;
-	void draw(Image* img) const;
+	void draw(Image* image) const;
 
 	//input message reponse
 	void poll_events() const;
-	void handle_key_message(WPARAM virtual_key, bool pressed);
-	void handle_button_message(Button button, bool pressed);
-	void handle_scroll_message(float offset);
 
-	// load/save function
+	// member variable access function
 	HWND handle() const { return handle_; }
 	HDC memory_dc() const { return memory_dc_; }
 	int width() const { return width_; }
 	int height() const { return height_; }
-	Image* buffer() const { return back_buffer_; }
 	bool should_close() const { return should_close_; }
 	bool key_pressed(KeyCode key) const { assert(key >= 0 && key < KEY_NUM); return keys_[key]; }
 	bool button_pressed(Button button) const { assert(button >= 0 && button < BUTTON_NUM); return buttons_[button]; }
@@ -46,24 +40,26 @@ public:
 	void* userdata() const { return userdata_; }
 
 	void set_should_close(bool should_close) { should_close_ = should_close; }
+	void set_key_pressed(KeyCode key, bool pressed) { assert(key >= 0 && key < KEY_NUM); keys_[key] = pressed; }
+	void set_button_pressed(Button button, bool pressed) { assert(button >= 0 && button < BUTTON_NUM); buttons_[button] = pressed; }
 	void set_callbacks(CallBacks callbacks) { callbacks_ = callbacks; }
 	void set_userdata(void* userdata) { userdata_ = userdata; }
 	
 private:
 	void init_buffer(int width, int height);
-	void reset_buffer() const { back_buffer_->reset(); }
+	void reset_buffer() const { memset(back_buffer_, 0, width_ * height_ * 4); }
+	void swap_buffer() const;
 
 	HWND handle_;
-	HDC memory_dc_;     //memory device context
-	UInt8* front_buffer_; //actual pixel space to display on screen, associated with memory_dc_, auto freed by system
-	Image *back_buffer_; //pre-rendered buffer
+	HDC memory_dc_;	//memory device context
+	Byte* back_buffer_;	//pre-rendered buffer; RGBA 4 channels, associated with memory_dc_, auto deleted by system
 
 	/* common data of different platform */
 	int width_;
 	int height_;
 	bool should_close_;
-	bool keys_[KEY_NUM]; //whether certain key is pressed
-	bool buttons_[BUTTON_NUM]; //whether certain button is pressed
+	bool keys_[KEY_NUM]; //whether specific key is pressed
+	bool buttons_[BUTTON_NUM]; //whether specific button is pressed
 	CallBacks callbacks_;
 	void *userdata_;
 };

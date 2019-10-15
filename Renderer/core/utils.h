@@ -7,7 +7,7 @@
 /*
 *  read/write file
 */
-UInt8 read_byte(FILE *file);
+Byte read_byte(FILE *file);
 void read_bytes(FILE *file, void *buffer, int size);
 void write_bytes(FILE *file, void *buffer, int size);
 
@@ -21,8 +21,8 @@ void save_tga(const Image *image, const char *filePath);
 /*
 *  blit image data
 */
-void blit_image_bgr(Image *src, Image *dst);
-void blit_image_rgb(Image *src, Image *dst);
+void blit_image_bgr(Image *src, int buffer_width, int buffer_height, Byte* buffer);
+void blit_image_rgb(Image *src, int buffer_width, int buffer_height, Byte* buffer);
 
 
 /*

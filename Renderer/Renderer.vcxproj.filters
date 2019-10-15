@@ -9,12 +9,12 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
-    <Filter Include="platform">
-      <UniqueIdentifier>{109330e3-d5c7-48dc-9001-6083ff438e05}</UniqueIdentifier>
-    </Filter>
     <Filter Include="core">
       <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
       <Extensions>h;hh;hpp;hxx;hm;inl;inc;ipp;xsd</Extensions>
+    </Filter>
+    <Filter Include="ui">
+      <UniqueIdentifier>{109330e3-d5c7-48dc-9001-6083ff438e05}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -25,7 +25,7 @@
       <Filter>core</Filter>
     </ClCompile>
     <ClCompile Include="platform\win32.cpp">
-      <Filter>platform</Filter>
+      <Filter>ui</Filter>
     </ClCompile>
     <ClCompile Include="core\utils.cpp">
       <Filter>core</Filter>
@@ -45,6 +45,9 @@
       <Filter>core</Filter>
     </ClInclude>
     <ClInclude Include="core\utils.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="core\renderer.h">
       <Filter>core</Filter>
     </ClInclude>
   </ItemGroup>

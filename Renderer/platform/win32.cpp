@@ -19,8 +19,45 @@ static const char *WINDOW_CLASS_NAME = "Class";
 static const char *WINDOW_ENTRY_NAME = "Entry";
 #endif
 
-static LRESULT CALLBACK process_message(HWND hWnd, UINT uMsg,
-	WPARAM wParam, LPARAM lParam) 
+/*
+ * for virtual-key codes, see
+ * https://docs.microsoft.com/en-us/windows/desktop/inputdev/virtual-key-codes
+ */
+static void key_message_response(Window *window, WPARAM virtual_key, bool pressed) 
+{
+	KeyCode key;
+	switch (virtual_key) {
+	case 'A':      key = KEY_A;     break;
+	case 'D':      key = KEY_D;     break;
+	case 'S':      key = KEY_S;     break;
+	case 'W':      key = KEY_W;     break;
+	case VK_SPACE: key = KEY_SPACE; break;
+	default:       key = KEY_NUM;   break;
+	}
+	if (key < KEY_NUM) {
+		window->set_key_pressed(key, pressed);
+		if (window->callbacks().key_callback) {
+			window->callbacks().key_callback(window, key, pressed);
+		}
+	}
+}
+
+static void button_message_response(Window *window, Button button, bool pressed) 
+{
+	window->set_button_pressed(button, pressed);
+	if (window->callbacks().button_callback) {
+		window->callbacks().button_callback(window, button, pressed);
+	}
+}
+
+static void scroll_message_response(Window *window, float offset) 
+{
+	if (window->callbacks().scroll_callback) {
+		window->callbacks().scroll_callback(window, offset);
+	}
+}
+
+static LRESULT CALLBACK process_message(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 {
 	Window *window = (Window*)GetProp(hWnd, WINDOW_ENTRY_NAME);
 	if (window == NULL) {
@@ -31,32 +68,32 @@ static LRESULT CALLBACK process_message(HWND hWnd, UINT uMsg,
 		return 0;
 	}
 	else if (uMsg == WM_KEYDOWN) {
-		window->handle_key_message(wParam, true);
+		key_message_response(window, wParam, true);
 		return 0;
 	}
 	else if (uMsg == WM_KEYUP) {
-		window->handle_key_message(wParam, false);
+		key_message_response(window, wParam, false);
 		return 0;
 	}
 	else if (uMsg == WM_LBUTTONDOWN) {
-		window->handle_button_message(BUTTON_L, true);
+		button_message_response(window, BUTTON_L, true);
 		return 0;
 	}
 	else if (uMsg == WM_RBUTTONDOWN) {
-		window->handle_button_message(BUTTON_R, true);
+		button_message_response(window, BUTTON_R, true);
 		return 0;
 	}
 	else if (uMsg == WM_LBUTTONUP) {
-		window->handle_button_message(BUTTON_L, false);
+		button_message_response(window, BUTTON_L, false);
 		return 0;
 	}
 	else if (uMsg == WM_RBUTTONUP) {
-		window->handle_button_message(BUTTON_R, false);
+		button_message_response(window, BUTTON_R, false);
 		return 0;
 	}
 	else if (uMsg == WM_MOUSEWHEEL) {
 		float offset = GET_WHEEL_DELTA_WPARAM(wParam) / (float)WHEEL_DELTA;
-		window->handle_scroll_message(offset);
+		scroll_message_response(window, offset);
 		return 0;
 	}
 	else {
@@ -92,7 +129,6 @@ static HWND create_window(const char *title_, int width, int height)
 {
 	DWORD style = WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX;
 	RECT rect;
-	HWND handle;
 
 #ifdef UNICODE
 	wchar_t title[LINE_SIZE];
@@ -109,7 +145,7 @@ static HWND create_window(const char *title_, int width, int height)
 	width = rect.right - rect.left;
 	height = rect.bottom - rect.top;
 
-	handle = CreateWindow(WINDOW_CLASS_NAME, title, style,
+	HWND handle = CreateWindow(WINDOW_CLASS_NAME, title, style,
 		CW_USEDEFAULT, CW_USEDEFAULT, width, height,
 		NULL, NULL, GetModuleHandle(NULL), NULL);
 	assert(handle != NULL);
@@ -122,9 +158,7 @@ static HWND create_window(const char *title_, int width, int height)
  */
 void Window::init_buffer(int width, int height)
 {
-	back_buffer_ = new Image(width, height, 4);
-
-	UInt8* data;
+	Byte* data;
 
 	HDC window_dc = GetDC(handle_);
 	memory_dc_ = CreateCompatibleDC(window_dc);
@@ -136,7 +170,7 @@ void Window::init_buffer(int width, int height)
 	bi_header.biWidth = width;
 	bi_header.biHeight = -height;  /* top-down */
 	bi_header.biPlanes = 1;
-	bi_header.biBitCount = 32;
+	bi_header.biBitCount = 32; //RGBA, 4 channels, each channel has 8 bits;
 	bi_header.biCompression = BI_RGB;
 	HBITMAP dib_bitmap = CreateDIBSection(memory_dc_, (BITMAPINFO*)&bi_header,
 		DIB_RGB_COLORS, (void**)&data, NULL, 0);
@@ -144,7 +178,7 @@ void Window::init_buffer(int width, int height)
 	HBITMAP old_bitmap = (HBITMAP)SelectObject(memory_dc_, dib_bitmap);
 	DeleteObject(old_bitmap);
 
-	front_buffer_ = data;
+	back_buffer_ = data; //initialize back_buffer_ with system-allocated space
 }
 
 Window::Window(const char *title, int width, int height)
@@ -170,31 +204,20 @@ Window::~Window()
 
 	DeleteDC(memory_dc_);
 	DestroyWindow(handle_);
-
-	delete back_buffer_;
 }
 
-void Window::display() const
+void Window::swap_buffer() const
 {
 	HDC window_dc = GetDC(handle_);
-	int width = back_buffer_->width();
-	int height = back_buffer_->height();
-	BitBlt(window_dc, 0, 0, width, height, memory_dc_, 0, 0, SRCCOPY);
+	BitBlt(window_dc, 0, 0, width_, height_, memory_dc_, 0, 0, SRCCOPY);
 	ReleaseDC(handle_, window_dc);
-}
-
-void Window::swapBuffer() const
-{
-	int dataSize = width_ * height_ * back_buffer_->channels();
-	memcpy(front_buffer_, back_buffer_->data(), dataSize);
 }
 
 void Window::draw(Image *image) const
 {
 	reset_buffer();
-	blit_image_bgr(image, back_buffer_);
-	swapBuffer();
-	display();
+	blit_image_bgr(image, width_, height_, back_buffer_);
+	swap_buffer();
 }
 
 
@@ -207,44 +230,6 @@ void Window::poll_events() const
 	while (PeekMessage(&message, NULL, 0, 0, PM_REMOVE)) {
 		TranslateMessage(&message);
 		DispatchMessage(&message);
-	}
-}
-
-/*
- * for virtual-key codes, see
- * https://docs.microsoft.com/en-us/windows/desktop/inputdev/virtual-key-codes
- */
-void Window::handle_key_message(WPARAM virtual_key, bool pressed)
-{
-	KeyCode key;
-	switch (virtual_key) {
-	case 'A':      key = KEY_A;     break;
-	case 'D':      key = KEY_D;     break;
-	case 'S':      key = KEY_S;     break;
-	case 'W':      key = KEY_W;     break;
-	case VK_SPACE: key = KEY_SPACE; break;
-	default:       key = KEY_NUM;   break;
-	}
-	if (key < KEY_NUM) {
-		keys_[key] = pressed;
-		if (callbacks_.key_callback) {
-			callbacks_.key_callback(this, key, pressed);
-		}
-	}
-}
-
-void Window::handle_button_message(Button button, bool pressed)
-{
-	buttons_[button] = pressed;
-	if (callbacks_.button_callback) {
-		callbacks_.button_callback(this, button, pressed);
-	}
-}
-
-void Window::handle_scroll_message(float offset)
-{
-	if (callbacks_.scroll_callback) {
-		callbacks_.scroll_callback(this, offset);
 	}
 }
 

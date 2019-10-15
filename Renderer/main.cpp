@@ -3,7 +3,7 @@
 #include "core/image.h"
 
 
-static Image image;
+static Image* image;
 
 //按键按下去时一直处于 pressed = true 响应状态，松开时有一次 pressed = false 响应
 inline void keyCallBack(Window *window, KeyCode key, bool pressed)
@@ -12,7 +12,7 @@ inline void keyCallBack(Window *window, KeyCode key, bool pressed)
 	{
 	case KEY_A:
 		if (pressed) {
-			image.resize(image.width()*1.5, image.height()*1.5);
+			image->resize(image->width()*1.5, image->height()*1.5);
 			printf("Key \'A\' pressed\n");
 		}
 		else {
@@ -21,7 +21,7 @@ inline void keyCallBack(Window *window, KeyCode key, bool pressed)
 		break;
 	case KEY_D:
 		if (pressed) {
-			image.resize(image.width() / 1.5, image.height() / 1.5);
+			image->resize(image->width() / 1.5, image->height() / 1.5);
 			printf("Key \'D\' pressed\n");
 		}
 		else {
@@ -40,7 +40,7 @@ inline void buttonCallBack(Window *window, Button button, bool pressed)
 	{
 	case BUTTON_L:
 		if (pressed) {
-			image.flipHorizontal();
+			image->flipHorizontal();
 			printf("LeftButton pressed\n");
 		}
 		else {
@@ -49,7 +49,7 @@ inline void buttonCallBack(Window *window, Button button, bool pressed)
 		break;
 	case BUTTON_R:
 		if (pressed) {
-			image.flipVertical();
+			image->flipVertical();
 			printf("RightButton pressed\n");
 		}
 		else {
@@ -77,13 +77,15 @@ int main(void)
 	Window *window = new Window("Render", 800, 600);
 	window->set_callbacks(testCallBacks);
 
-	image.loadFromFile("test.tga"/*"demo.png"*/);
+	image = new Image();
+	image->loadFromFile("test.tga"/*"demo.png"*/);
 
 	while (!window->should_close()) {
-		window->draw(&image);
+		window->draw(image);
 		window->poll_events();
 	}
 
+	delete image;
 	delete window;
 
 	return 0;

@@ -1,7 +1,7 @@
 #ifndef IMAGE_H
 #define IMAGE_H
 
-typedef unsigned char UInt8;
+typedef unsigned char Byte;
 
 static const int TGA_HEADER_SIZE = 18;
 
@@ -9,7 +9,7 @@ class Image
 {
  public:
 	 Image(int width = 1, int height = 1, int channels = 4);
-	 Image(int width, int height, int channels, UInt8* data);
+	 Image(int width, int height, int channels, Byte* data);
 	 Image(const Image& image);
 	 ~Image();
 
@@ -23,7 +23,7 @@ class Image
 	 void resize(int width, int height);
 	 void reset() const { memset(data_, 0, data_size()); };
 
-	 UInt8 *get_pixel(int row, int col) const
+	 Byte *get_pixel(int row, int col) const
 	 {
 		 int index = row * width_ * channels_ + col * channels_;
 		 return &(data_[index]);
@@ -33,12 +33,12 @@ class Image
 	int height() const { return height_; }
 	int channels() const { return channels_; }
 	int data_size() const { return width_ * height_*channels_; }
-	UInt8 * data() const { return data_; } //const ptr, none-const data
+	Byte * data() const { return data_; } //const ptr, none-const data
 
 	//void set_width(int width) { width_ = width; }
 	//void set_height(int height) { height_ = height; }
 	//void set_channels(int channels) { channels_ = channels; }
-	void set_data(UInt8 * data) { delete[] data_; data_ = data; }
+	void set_data(Byte * data) { delete[] data_; data_ = data; }
 
 
 private:
@@ -47,7 +47,7 @@ private:
 	int width_;
 	int height_;
 	int channels_;
-	UInt8 *data_;
+	Byte *data_;
 };
 
 #endif

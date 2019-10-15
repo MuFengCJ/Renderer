@@ -11,11 +11,11 @@ Image::Image(int width, int height, int channels)
 	channels_ = channels;
 
 	int data_size = width * height * channels;
-	data_ = new UInt8[data_size];
+	data_ = new Byte[data_size];
 	memset(data_, 0, data_size);
 }
 
-Image::Image(int width, int height, int channels, UInt8* data)
+Image::Image(int width, int height, int channels, Byte* data)
 {
 	assert(width > 0 && height > 0 && channels >= 1 && channels <= 4 && data != NULL);
 	width_ = width;
@@ -31,7 +31,7 @@ Image::Image(const Image& image)
 	channels_ = image.channels_;
 
 	int data_size = width_ * height_ * channels_;
-	data_ = new UInt8[data_size];
+	data_ = new Byte[data_size];
 	memcpy(data_, image.data_, data_size);
 }
 
@@ -49,7 +49,7 @@ void Image::operator=(const Image& image)
 	delete[] data_; //release resourcePtr before change it
 
 	int data_size = width_ * height_ * channels_;
-	data_ = new UInt8[data_size];
+	data_ = new Byte[data_size];
 	memcpy(data_, image.data_, data_size);
 }
 
@@ -62,7 +62,7 @@ void Image::operator=(const Image& image)
 */
 void Image::loadFromTGA(const char *filePath)
 {
-	unsigned char header[TGA_HEADER_SIZE];
+	Byte header[TGA_HEADER_SIZE];
 	int width, height, depth, channels;
 	int idlength, imgtype, imgdesc;
 	FILE *file;
@@ -130,9 +130,9 @@ void Image::saveAsFile(const char *filePath) const
 /* 
 *  image processing 
 */
-static inline void swap_byte(UInt8 *x, UInt8 *y)
+static inline void swap_byte(Byte *x, Byte *y)
 {
-	UInt8 t = *x;
+	Byte t = *x;
 	*x = *y;
 	*y = t;
 }
@@ -144,8 +144,8 @@ void Image::flipHorizontal() const
 	for (row = 0; row < height_; row++) {
 		for (col = 0; col < half_width; col++) {
 			int flipped_col = width_ - col - 1;
-			unsigned char *pixel1 = get_pixel(row, col);
-			unsigned char *pixel2 = get_pixel(row, flipped_col);
+			Byte *pixel1 = get_pixel(row, col);
+			Byte *pixel2 = get_pixel(row, flipped_col);
 			for (int k = 0; k < channels_; k++) {
 				swap_byte(&pixel1[k], &pixel2[k]);
 			}
@@ -160,8 +160,8 @@ void Image::flipVertical() const
 	for (row = 0; row < half_height; row++) {
 		for (col = 0; col < width_; col++) {
 			int flipped_row = height_ - row - 1;
-			unsigned char *pixel1 = get_pixel(row, col);
-			unsigned char *pixel2 = get_pixel(flipped_row, col);
+			Byte *pixel1 = get_pixel(row, col);
+			Byte *pixel2 = get_pixel(flipped_row, col);
 			for (int k = 0; k < channels_; k++) {
 				swap_byte(&pixel1[k], &pixel2[k]);
 			}
@@ -187,11 +187,11 @@ void Image::resize(int width, int height)
 			float delta_r = mapped_r - (float)src_r0;
 			float delta_c = mapped_c - (float)src_c0;
 
-			unsigned char *pixel_00 = get_pixel(src_r0, src_c0);
-			unsigned char *pixel_01 = get_pixel(src_r0, src_c1);
-			unsigned char *pixel_10 = get_pixel(src_r1, src_c0);
-			unsigned char *pixel_11 = get_pixel(src_r1, src_c1);
-			unsigned char *pixel = target.get_pixel(dst_row, dst_col);
+			Byte *pixel_00 = get_pixel(src_r0, src_c0);
+			Byte *pixel_01 = get_pixel(src_r0, src_c1);
+			Byte *pixel_10 = get_pixel(src_r1, src_c0);
+			Byte *pixel_11 = get_pixel(src_r1, src_c1);
+			Byte *pixel = target.get_pixel(dst_row, dst_col);
 			for (int k = 0; k < channels_; k++) {
 				float v00 = pixel_00[k];  /* row 0, col 0 */
 				float v01 = pixel_01[k];  /* row 0, col 1 */
@@ -200,7 +200,7 @@ void Image::resize(int width, int height)
 				float v0 = lerp(v00, v01, delta_c);  /* row 0 */
 				float v1 = lerp(v10, v11, delta_c);  /* row 1 */
 				float value = lerp(v0, v1, delta_r);
-				pixel[k] = (unsigned char)(value + 0.5f);
+				pixel[k] = (Byte)(value + 0.5f);
 			}
 		}
 	}
