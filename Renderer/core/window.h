@@ -51,7 +51,7 @@ public:
 	
 private:
 	void init_buffer(int width, int height);
-	void reset_buffer() const { memset(back_buffer_->data(), 0, back_buffer_->data_size()); }
+	void reset_buffer() const { back_buffer_->reset(); }
 
 	HWND handle_;
 	HDC memory_dc_;     //memory device context

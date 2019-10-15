@@ -18,9 +18,10 @@ class Image
 	 void loadFromFile(const char *filePath);
 	 void saveAsFile(const char *filePath) const ;
 
-	 void flipHorizontal(); //flip left and right
-	 void flipVertical();	//flip up and down
+	 void flipHorizontal() const; //flip left and right
+	 void flipVertical() const;	//flip up and down
 	 void resize(int width, int height);
+	 void reset() const { memset(data_, 0, data_size()); };
 
 	 UInt8 *get_pixel(int row, int col) const
 	 {

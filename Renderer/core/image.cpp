@@ -137,7 +137,7 @@ static inline void swap_byte(UInt8 *x, UInt8 *y)
 	*y = t;
 }
 
-void Image::flipHorizontal() 
+void Image::flipHorizontal() const
 {
 	int half_width = width_ / 2;
 	int row, col;
@@ -153,7 +153,7 @@ void Image::flipHorizontal()
 	}
 }
 
-void Image::flipVertical() 
+void Image::flipVertical() const 
 {
 	int half_height = height_ / 2;
 	int row, col;

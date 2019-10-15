@@ -19,44 +19,6 @@ static const char *WINDOW_CLASS_NAME = "Class";
 static const char *WINDOW_ENTRY_NAME = "Entry";
 #endif
 
-/*
- * for virtual-key codes, see
- * https://docs.microsoft.com/en-us/windows/desktop/inputdev/virtual-key-codes
- */
-void Window::handle_key_message(WPARAM virtual_key, bool pressed) 
-{
-	KeyCode key;
-	switch (virtual_key) {
-	case 'A':      key = KEY_A;     break;
-	case 'D':      key = KEY_D;     break;
-	case 'S':      key = KEY_S;     break;
-	case 'W':      key = KEY_W;     break;
-	case VK_SPACE: key = KEY_SPACE; break;
-	default:       key = KEY_NUM;   break;
-	}
-	if (key < KEY_NUM) {
-		keys_[key] = pressed;
-		if (callbacks_.key_callback) {
-			callbacks_.key_callback(this, key, pressed);
-		}
-	}
-}
-
-void Window::handle_button_message(Button button, bool pressed) 
-{
-	buttons_[button] = pressed;
-	if (callbacks_.button_callback) {
-		callbacks_.button_callback(this, button, pressed);
-	}
-}
-
-void Window::handle_scroll_message(float offset) 
-{
-	if (callbacks_.scroll_callback) {
-		callbacks_.scroll_callback(this, offset);
-	}
-}
-
 static LRESULT CALLBACK process_message(HWND hWnd, UINT uMsg,
 	WPARAM wParam, LPARAM lParam) 
 {
@@ -245,6 +207,44 @@ void Window::poll_events() const
 	while (PeekMessage(&message, NULL, 0, 0, PM_REMOVE)) {
 		TranslateMessage(&message);
 		DispatchMessage(&message);
+	}
+}
+
+/*
+ * for virtual-key codes, see
+ * https://docs.microsoft.com/en-us/windows/desktop/inputdev/virtual-key-codes
+ */
+void Window::handle_key_message(WPARAM virtual_key, bool pressed)
+{
+	KeyCode key;
+	switch (virtual_key) {
+	case 'A':      key = KEY_A;     break;
+	case 'D':      key = KEY_D;     break;
+	case 'S':      key = KEY_S;     break;
+	case 'W':      key = KEY_W;     break;
+	case VK_SPACE: key = KEY_SPACE; break;
+	default:       key = KEY_NUM;   break;
+	}
+	if (key < KEY_NUM) {
+		keys_[key] = pressed;
+		if (callbacks_.key_callback) {
+			callbacks_.key_callback(this, key, pressed);
+		}
+	}
+}
+
+void Window::handle_button_message(Button button, bool pressed)
+{
+	buttons_[button] = pressed;
+	if (callbacks_.button_callback) {
+		callbacks_.button_callback(this, button, pressed);
+	}
+}
+
+void Window::handle_scroll_message(float offset)
+{
+	if (callbacks_.scroll_callback) {
+		callbacks_.scroll_callback(this, offset);
 	}
 }
 
