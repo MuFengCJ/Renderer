@@ -93,10 +93,12 @@ public:
 	static Vector2d zero() { return Vector2d(0.0, 0.0); } 
 };
 
+typedef Vector2d Point2d;
+
 class Vector3d
 {
 public:
-		double x, y, z;
+	double x, y, z;
 
  	//declare constructor-initialize
 	Vector3d(double _x = 0.0, double _y = 0.0, double _z = 0.0) : x(_x), y(_y), z(_z) {}
@@ -176,6 +178,8 @@ public:
 	//zero vector
 	static Vector3d zero() { return Vector3d(0.0, 0.0, 0.0); } 
 };
+
+typedef Vector3d Point3d;
 
 class Vector4d
 {

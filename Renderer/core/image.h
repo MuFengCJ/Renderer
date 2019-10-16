@@ -13,7 +13,7 @@ class Image
 	 Image(const Image& image);
 	 ~Image();
 
-	 void operator=(const Image& image);
+	 Image& operator=(const Image& image);
 
 	 void loadFromFile(const char *filePath);
 	 void saveAsFile(const char *filePath) const ;

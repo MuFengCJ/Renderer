@@ -9,7 +9,7 @@ using std::vector;
 class Vertex
 {
 public:
-	Vector3d position_;
+	Point3d position_;
 	Vector2d texCoord_;
 	Vector3d normal_;
 
@@ -41,11 +41,16 @@ private:
 class Mesh
 {
 public:
+	Mesh();
+	~Mesh();
+
+	int vertex_num() const;
+	int face_num() const;
 
 private:
 	std::vector<Vertex> vertics_;
 	//std::vector<Edge> edges_;
-	//std::vector<Face> faces_;
+	std::vector<Face> faces_;
 };
 
 #endif

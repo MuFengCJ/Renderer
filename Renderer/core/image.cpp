@@ -40,7 +40,7 @@ Image::~Image()
 	delete[] data_;
 }
 
-void Image::operator=(const Image& image)
+Image& Image::operator=(const Image& image)
 {
 	width_ = image.width_;
 	height_ = image.height_;
@@ -51,6 +51,8 @@ void Image::operator=(const Image& image)
 	int data_size = width_ * height_ * channels_;
 	data_ = new Byte[data_size];
 	memcpy(data_, image.data_, data_size);
+
+	return *this;
 }
 
 Byte* Image::get_pixel(int x, int y) const
