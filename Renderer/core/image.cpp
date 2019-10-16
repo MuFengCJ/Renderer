@@ -1,6 +1,6 @@
+#include "image.h"
 #include <assert.h>
 #include <algorithm>
-#include "image.h"
 #include "utils.h"
 
 Image::Image(int width, int height, int channels)
@@ -51,6 +51,12 @@ void Image::operator=(const Image& image)
 	int data_size = width_ * height_ * channels_;
 	data_ = new Byte[data_size];
 	memcpy(data_, image.data_, data_size);
+}
+
+Byte* Image::get_pixel(int x, int y) const
+{
+	int index = y * width_ * channels_ + x * channels_;
+	return &(data_[index]);
 }
 
 /********************************
@@ -144,8 +150,8 @@ void Image::flipHorizontal() const
 	for (row = 0; row < height_; row++) {
 		for (col = 0; col < half_width; col++) {
 			int flipped_col = width_ - col - 1;
-			Byte *pixel1 = get_pixel(row, col);
-			Byte *pixel2 = get_pixel(row, flipped_col);
+			Byte *pixel1 = get_pixel(col, row);
+			Byte *pixel2 = get_pixel(flipped_col, row);
 			for (int k = 0; k < channels_; k++) {
 				swap_byte(&pixel1[k], &pixel2[k]);
 			}
@@ -160,8 +166,8 @@ void Image::flipVertical() const
 	for (row = 0; row < half_height; row++) {
 		for (col = 0; col < width_; col++) {
 			int flipped_row = height_ - row - 1;
-			Byte *pixel1 = get_pixel(row, col);
-			Byte *pixel2 = get_pixel(flipped_row, col);
+			Byte *pixel1 = get_pixel(col, row);
+			Byte *pixel2 = get_pixel(col, flipped_row);
 			for (int k = 0; k < channels_; k++) {
 				swap_byte(&pixel1[k], &pixel2[k]);
 			}
@@ -187,11 +193,11 @@ void Image::resize(int width, int height)
 			float delta_r = mapped_r - (float)src_r0;
 			float delta_c = mapped_c - (float)src_c0;
 
-			Byte *pixel_00 = get_pixel(src_r0, src_c0);
-			Byte *pixel_01 = get_pixel(src_r0, src_c1);
-			Byte *pixel_10 = get_pixel(src_r1, src_c0);
-			Byte *pixel_11 = get_pixel(src_r1, src_c1);
-			Byte *pixel = target.get_pixel(dst_row, dst_col);
+			Byte *pixel_00 = get_pixel(src_c0, src_r0);
+			Byte *pixel_01 = get_pixel(src_c1, src_r0);
+			Byte *pixel_10 = get_pixel(src_c0, src_r1);
+			Byte *pixel_11 = get_pixel(src_c1, src_r1);
+			Byte *pixel = target.get_pixel(dst_col, dst_row);
 			for (int k = 0; k < channels_; k++) {
 				float v00 = pixel_00[k];  /* row 0, col 0 */
 				float v01 = pixel_01[k];  /* row 0, col 1 */
@@ -207,3 +213,8 @@ void Image::resize(int width, int height)
 	
 	(*this) = target;
 }
+
+void Image::reset() const 
+{ 
+	memset(data_, 0, data_size()); 
+};

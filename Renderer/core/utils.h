@@ -3,7 +3,7 @@
 
 #include <stdio.h>
 #include "image.h"
-
+#include "renderer.h"
 /*
 *  read/write file
 */
@@ -17,13 +17,12 @@ void write_bytes(FILE *file, void *buffer, int size);
 void load_tga(FILE *file, Image *image);
 void save_tga(const Image *image, const char *filePath);
 
-
 /*
 *  blit image data
 */
 void blit_image_bgr(Image *src, int buffer_width, int buffer_height, Byte* buffer);
 void blit_image_rgb(Image *src, int buffer_width, int buffer_height, Byte* buffer);
-
+void blit_frame_bgr(FrameBuffer* src, int buffer_width, int buffer_height, Byte* buffer);
 
 /*
 *  misc functions 
@@ -33,7 +32,6 @@ inline const char *get_extension(const char *filename)
 	const char *dot_pos = strrchr(filename, '.');
 	return dot_pos == NULL ? "" : dot_pos + 1;
 }
-
 
 /*
 *  math functions

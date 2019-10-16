@@ -136,18 +136,27 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="core\color.cpp" />
     <ClCompile Include="core\image.cpp" />
+    <ClCompile Include="core\matrix.cpp" />
+    <ClCompile Include="core\renderer.cpp" />
+    <ClCompile Include="core\scene.cpp" />
     <ClCompile Include="core\utils.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="platform\win32.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="core\color.h" />
     <ClInclude Include="core\image.h" />
     <ClInclude Include="core\matrix.h" />
+    <ClInclude Include="core\mesh.h" />
+    <ClInclude Include="core\model.h" />
     <ClInclude Include="core\renderer.h" />
+    <ClInclude Include="core\scene.h" />
+    <ClInclude Include="core\texture.h" />
     <ClInclude Include="core\utils.h" />
     <ClInclude Include="core\window.h" />
-    <ClInclude Include="core\vector.h" />
+    <ClInclude Include="core\geometry.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

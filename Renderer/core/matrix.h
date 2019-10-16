@@ -1,8 +1,10 @@
-#pragma once
+#ifndef MATRIX_H
+#define MATRIX_H
+
 #include <vector>
 #include <assert.h>
 
-#include "vector.h"
+#include "geometry.h"
 
 using std::vector;
 
@@ -200,3 +202,5 @@ public:
 
 	}
 };
+
+#endif

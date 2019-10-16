@@ -3,10 +3,12 @@
 
 #include <Windows.h>
 #include <assert.h>
-#include "image.h"
 
+class Image;
+class FrameBuffer;
 class Window;
 
+typedef unsigned char Byte;
 typedef enum { KEY_A = 0, KEY_D, KEY_S, KEY_W, KEY_SPACE, KEY_NUM } KeyCode;
 typedef enum { BUTTON_L = 0, BUTTON_R, BUTTON_NUM } Button;
 //function pointer
@@ -24,13 +26,13 @@ public:
 
 	//display function
 	void draw(Image* image) const;
+	void draw(FrameBuffer* framebuffer) const;
 
 	//input message reponse
 	void poll_events() const;
+	void cursor_pos(float &xpos, float &ypos) const;
 
 	// member variable access function
-	HWND handle() const { return handle_; }
-	HDC memory_dc() const { return memory_dc_; }
 	int width() const { return width_; }
 	int height() const { return height_; }
 	bool should_close() const { return should_close_; }
@@ -47,7 +49,7 @@ public:
 	
 private:
 	void init_buffer(int width, int height);
-	void reset_buffer() const { memset(back_buffer_, 0, width_ * height_ * 4); }
+	void reset_buffer() const;
 	void swap_buffer() const;
 
 	HWND handle_;
@@ -63,9 +65,6 @@ private:
 	CallBacks callbacks_;
 	void *userdata_;
 };
-
-/* input related functions */
-void input_query_cursor(Window *window, float *xpos, float *ypos);
 
 /* misc functions */
 float get_time();

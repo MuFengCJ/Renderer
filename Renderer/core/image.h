@@ -21,13 +21,9 @@ class Image
 	 void flipHorizontal() const; //flip left and right
 	 void flipVertical() const;	//flip up and down
 	 void resize(int width, int height);
-	 void reset() const { memset(data_, 0, data_size()); };
+	 void reset() const;
 
-	 Byte *get_pixel(int row, int col) const
-	 {
-		 int index = row * width_ * channels_ + col * channels_;
-		 return &(data_[index]);
-	 }
+	 Byte *get_pixel(int x, int y) const;
 
 	int width() const { return width_; }
 	int height() const { return height_; }

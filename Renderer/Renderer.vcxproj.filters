@@ -13,7 +13,7 @@
       <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
       <Extensions>h;hh;hpp;hxx;hm;inl;inc;ipp;xsd</Extensions>
     </Filter>
-    <Filter Include="ui">
+    <Filter Include="platform">
       <UniqueIdentifier>{109330e3-d5c7-48dc-9001-6083ff438e05}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
@@ -25,9 +25,21 @@
       <Filter>core</Filter>
     </ClCompile>
     <ClCompile Include="platform\win32.cpp">
-      <Filter>ui</Filter>
+      <Filter>platform</Filter>
     </ClCompile>
     <ClCompile Include="core\utils.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="core\renderer.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="core\scene.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="core\matrix.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="core\color.cpp">
       <Filter>core</Filter>
     </ClCompile>
   </ItemGroup>
@@ -38,9 +50,6 @@
     <ClInclude Include="core\matrix.h">
       <Filter>core</Filter>
     </ClInclude>
-    <ClInclude Include="core\vector.h">
-      <Filter>core</Filter>
-    </ClInclude>
     <ClInclude Include="core\window.h">
       <Filter>core</Filter>
     </ClInclude>
@@ -48,6 +57,24 @@
       <Filter>core</Filter>
     </ClInclude>
     <ClInclude Include="core\renderer.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="core\scene.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="core\model.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="core\color.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="core\mesh.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="core\texture.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="core\geometry.h">
       <Filter>core</Filter>
     </ClInclude>
   </ItemGroup>

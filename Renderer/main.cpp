@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include "core/window.h"
 #include "core/image.h"
+#include "core/renderer.h"
+#include "core/color.h"
 
 
 static Image* image;
@@ -44,6 +46,9 @@ inline void buttonCallBack(Window *window, Button button, bool pressed)
 			printf("LeftButton pressed\n");
 		}
 		else {
+			float xpos, ypos;
+			window->cursor_pos(xpos, ypos);
+			printf("cursor x: %f, y: %f\n", xpos, ypos);
 			printf("LeftButton unPressed\n");
 		}
 		break;
@@ -67,6 +72,7 @@ inline void scrollCallBack(Window *window, float offset)
 	printf("scroll offset = %f\n", offset);
 }
 
+#if 1
 int main(void) 
 {
 	CallBacks testCallBacks;
@@ -78,7 +84,7 @@ int main(void)
 	window->set_callbacks(testCallBacks);
 
 	image = new Image();
-	image->loadFromFile("test.tga"/*"demo.png"*/);
+	image->loadFromFile("test2.tga"/*"demo.png"*/);
 
 	while (!window->should_close()) {
 		window->draw(image);
@@ -90,3 +96,22 @@ int main(void)
 
 	return 0;
 }
+#else
+int main()
+{
+	Window *window = new Window("Render", 800, 600);
+
+	FrameBuffer* frame = new FrameBuffer(800, 600);
+	rasterize_line(30, 20, 220, 220, Color::Red, frame);
+
+	while (!window->should_close()) {
+		window->draw(frame);
+		window->poll_events();
+	}
+
+	delete frame;
+	delete window;
+
+	return 0;
+}
+#endif

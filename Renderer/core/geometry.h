@@ -1,29 +1,26 @@
-#pragma once
-#include <cmath>
+#ifndef GEOMETRY_H
+#define GEOMETRY_H
+
+#include <assert.h>
+#include <algorithm>
 
 const double GLH_EPSILON = 10e-6;
 const double PI = 3.14159265358979323846;
 
 inline bool isEqual(double a, double b, double tol = GLH_EPSILON)
 {
-	return fabs(a - b) < tol;
+	return std::fabs(a - b) < tol;
 }
 
 inline bool isZero(double a, double tol = GLH_EPSILON)
 {
-	return fabs(a - 0.0) < tol;
+	return std::fabs(a - 0.0) < tol;
 }
 
 class Vector2d
 {
 public:
-	union {
-		struct
-		{
-			double x, y;
-		};
-		double v[2];
-	};
+	double x, y;
 
 	Vector2d(double _x = 0.0, double _y = 0.0) : x(_x), y(_y) {}
 	Vector2d(const Vector2d& vec) : x(vec.x), y(vec.y) {}
@@ -33,12 +30,6 @@ public:
 		x = vec.x;
 		y = vec.y;
 		return *this;
-	}
-
-	double& operator[](int i)
-	{
-		assert(i >= 0 && i < 2);
-		return v[i];
 	}
 
 	//get vector that has reverse direction
@@ -105,13 +96,8 @@ public:
 class Vector3d
 {
 public:
-	union {
-		struct
-		{
-			double x, y, z;
-		};
-		double v[3];
-	};
+		double x, y, z;
+
  	//declare constructor-initialize
 	Vector3d(double _x = 0.0, double _y = 0.0, double _z = 0.0) : x(_x), y(_y), z(_z) {}
 	//copy constructor-initialize
@@ -124,12 +110,6 @@ public:
 		y = vec.y;
 		z = vec.z;
 		return *this;
-	}
-
-	double& operator[](int i)
-	{
-		assert(i >= 0 && i < 3);
-		return v[i];
 	}
 
 	//get vector that has reverse direction
@@ -200,13 +180,8 @@ public:
 class Vector4d
 {
 public:
-	union {
-		struct
-		{
-			double x, y, z, w;
-		};
-		double v[4];
-	};
+	double x, y, z, w;
+
 	//declare constructor-initialize
 	Vector4d(double _x = 0.0, double _y = 0.0, double _z = 0.0, double _w = 1.0) : x(_x), y(_y), z(_z), w(_w){}
 	//copy constructor-initialize
@@ -220,12 +195,6 @@ public:
 		z = vec.z;
 		w = vec.w;
 		return *this;
-	}
-
-	double& operator[](int i)
-	{
-		assert(i >= 0 && i < 4);
-		return v[i];
 	}
 
 	//get vector that has reverse direction
@@ -306,3 +275,5 @@ inline Vector3d toVec3d(const Vector4d &vec4d)
 {
 	return Vector3d(vec4d.x, vec4d.y, vec4d.z);
 }
+
+#endif

@@ -1,10 +1,8 @@
 /**********************************************
 * https://github.com/zauonlok/renderer/blob/v1.2/renderer/platforms/win32.c
 ***********************************************/
-
-#include <direct.h>
 #include "../core/window.h"
-#include "../core/image.h"
+#include <direct.h>
 #include "../core/utils.h"
 
 
@@ -213,10 +211,22 @@ void Window::swap_buffer() const
 	ReleaseDC(handle_, window_dc);
 }
 
+void Window::reset_buffer() const
+{
+	memset(back_buffer_, 0, width_ * height_ * 4);
+}
+
 void Window::draw(Image *image) const
 {
 	reset_buffer();
 	blit_image_bgr(image, width_, height_, back_buffer_);
+	swap_buffer();
+}
+
+void Window::draw(FrameBuffer* framebuffer) const
+{
+	reset_buffer();
+	blit_frame_bgr(framebuffer, width_, height_, back_buffer_);
 	swap_buffer();
 }
 
@@ -233,14 +243,13 @@ void Window::poll_events() const
 	}
 }
 
-
-void input_query_cursor(Window *window, float *xpos, float *ypos) 
+void Window::cursor_pos(float &xpos, float &ypos) const
 {
 	POINT point;
 	GetCursorPos(&point);
-	ScreenToClient(window->handle(), &point);
-	*xpos = (float)point.x;
-	*ypos = (float)point.y;
+	ScreenToClient(handle_, &point);
+	xpos = (float)point.x;
+	ypos = (float)point.y;
 }
 
 

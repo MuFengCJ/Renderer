@@ -1,6 +1,7 @@
+#include "utils.h"
 #include <assert.h>
 #include <algorithm>
-#include "utils.h"
+#include "color.h"
 
 Byte read_byte(FILE *file)
 {
@@ -95,7 +96,7 @@ void blit_image_bgr(Image *src, int buffer_width, int buffer_height, Byte* buffe
 	for (row = 0; row < height; row++) {
 		for (col = 0; col < width; col++) {
 			int flipped_row = src->height() - 1 - row;
-			Byte *src_pixel = src->get_pixel(flipped_row, col);
+			Byte *src_pixel = src->get_pixel(col, flipped_row);
 			int dst_pixel_index = row * buffer_width * 4 + col * 4;
 			if (src->channels() == 3 || src->channels() == 4) {
 				buffer[dst_pixel_index + 0] = src_pixel[0];  /* blue */
@@ -122,17 +123,39 @@ void blit_image_rgb(Image *src, int buffer_width, int buffer_height, Byte* buffe
 	for (row = 0; row < height; row++) {
 		for (col = 0; col < width; col++) {
 			int flipped_row = src->height() - 1 - row;
-			Byte *src_pixel = src->get_pixel(flipped_row, col);
+			Byte *src_pixel = src->get_pixel(col, flipped_row);
 			int dst_pixel_index = row * buffer_width * 4 + col * 4;
 			if (src->channels() == 3 || src->channels() == 4) {
-				buffer[dst_pixel_index + 2] = src_pixel[0];  /* red */
+				buffer[dst_pixel_index + 0] = src_pixel[2];  /* red */
 				buffer[dst_pixel_index + 1] = src_pixel[1];  /* green */
-				buffer[dst_pixel_index + 0] = src_pixel[2];  /* blue */
+				buffer[dst_pixel_index + 2] = src_pixel[0];  /* blue */
 			}
 			else {
 				Byte gray = src_pixel[0];
 				buffer[dst_pixel_index + 0] = buffer[dst_pixel_index + 1] = buffer[dst_pixel_index + 2] = gray;
 			}
+		}
+	}
+}
+
+void blit_frame_bgr(FrameBuffer* src, int buffer_width, int buffer_height, Byte* buffer)
+{
+	int width = std::min(src->width(), buffer_width);
+	int height = std::min(src->height(), buffer_height);
+	int row, col;
+
+	assert(width > 0 && height > 0);
+
+	for (row = 0; row < height; row++) {
+		for (col = 0; col < width; col++) {
+			//window origin is topLeft while frame and image are default as bottomLeft
+			int flipped_row = src->height() - 1 - row;
+			Color src_pixel = src->get_pixel(col, flipped_row);
+			int dst_pixel_index = row * buffer_width * 4 + col * 4;
+
+			buffer[dst_pixel_index + 0] = src_pixel.b * 255;  /* blue */
+			buffer[dst_pixel_index + 1] = src_pixel.g * 255;  /* green */
+			buffer[dst_pixel_index + 2] = src_pixel.r * 255;  /* red */
 		}
 	}
 }
