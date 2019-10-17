@@ -22,7 +22,7 @@ private:
 	static void key_callback(Window *window, KeyCode key, bool pressed);
 	static void button_callback(Window *window, Button button, bool pressed);
 	static void scroll_callback(Window *window, float offset);
-	static void cursor_callback(Window* window, double xpos, double ypos);
+	static void cursor_callback(Window* window, float xpos, float ypos);
 	static void resize_callback(Window* window, int width, int height);
 
 	static Window* window_;		//window to display

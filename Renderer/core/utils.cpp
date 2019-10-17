@@ -171,7 +171,7 @@ const char *get_extension(const char *filename)
 	return dot_pos == NULL ? "" : dot_pos + 1;
 }
 
-double lerp(double d0, double d1, double t)
+float lerp(float d0, float d1, float t)
 {
 	return d0 + (d1 - d0) * t;
 }

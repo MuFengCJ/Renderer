@@ -100,16 +100,14 @@ int main(void)
 #else
 int main()
 {
-	App *app = new App("SoftRenderer", 800, 600);
+	App app = App("SoftRenderer", 800, 600);
 
 	Renderer* renderer = new Renderer(800, 600);
-	app->set_renderer(renderer);
+	app.set_renderer(renderer);
 
-	app->init();
+	app.init();
 
-	app->start();
-
-	delete app;
+	app.start();
 
 	return 0;
 }

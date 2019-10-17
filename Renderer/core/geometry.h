@@ -1,31 +1,21 @@
 #ifndef GEOMETRY_H
 #define GEOMETRY_H
 
-#include <assert.h>
 #include <algorithm>
 
-const double GLH_EPSILON = 10e-6;
-const double PI = 3.14159265358979323846;
-
-inline bool isEqual(double a, double b, double tol = GLH_EPSILON)
-{
-	return std::fabs(a - b) < tol;
-}
-
-inline bool isZero(double a, double tol = GLH_EPSILON)
-{
-	return std::fabs(a - 0.0) < tol;
-}
-
-class Vector2d
+template <typename T>
+class Vector2
 {
 public:
-	double x, y;
+	T x, y;
 
-	Vector2d(double _x = 0.0, double _y = 0.0) : x(_x), y(_y) {}
-	Vector2d(const Vector2d& vec) : x(vec.x), y(vec.y) {}
+	//declare constructor-initialize
+	Vector2() :x(0), y(0) {}
+	Vector2(T _x, T _y) : x(_x), y(_y) {}
+	//copy constructor-initialize
+	Vector2(const Vector2<T>& vec) : x(vec.x), y(vec.y) {}
 
-	Vector2d &operator=(const Vector2d& vec)
+	Vector2<T> &operator=(const Vector2<T>& vec)
 	{
 		x = vec.x;
 		y = vec.y;
@@ -33,41 +23,39 @@ public:
 	}
 
 	//get vector that has reverse direction
-	Vector2d operator-() const { return Vector2d(-x, -y); } 
-	Vector2d operator+(const Vector2d& vec) const { return Vector2d(x + vec.x, y + vec.y); }
-	Vector2d operator-(const Vector2d& vec) const { return Vector2d(x - vec.x, y - vec.y); }
-	Vector2d operator*(double t) const { return Vector2d(x * t, y * t); }
-	Vector2d operator/(double t) const { return Vector2d(x / t, y / t); }
+	Vector2<T> operator-() const { return Vector2<T>(-x, -y); } 
+	Vector2<T> operator+(const Vector2<T>& vec) const { return Vector2<T>(x + vec.x, y + vec.y); }
+	Vector2<T> operator-(const Vector2<T>& vec) const { return Vector2<T>(x - vec.x, y - vec.y); }
+	Vector2<T> operator*(float t) const { return Vector2<T>(x * t, y * t); }
+	Vector2<T> operator/(float t) const { return Vector2<T>(x / t, y / t); }
 
-	Vector2d& operator+=(const Vector2d& vec)
+	Vector2<T>& operator+=(const Vector2<T>& vec)
 	{
 		x += vec.x;
 		y += vec.y;
 		return *this;
 	}
-	Vector2d& operator-=(const Vector2d& vec)
+	Vector2<T>& operator-=(const Vector2<T>& vec)
 	{
 		x -= vec.x;
 		y -= vec.y;
 		return *this;
 	}
-	Vector2d& operator*=(double t)
+	Vector2<T>& operator*=(float t)
 	{
 		x *= t;
 		y *= t;
 		return *this;
 	}
-	Vector2d& operator/=(double t)
+	Vector2<T>& operator/=(float t)
 	{
 		x /= t;
 		y /= t;
 		return *this;
 	}
 
-	friend Vector2d operator*(double t, const Vector2d& vec) { return Vector2d(t * vec.x, t * vec.y); }
+	friend Vector2<T> operator*(float t, const Vector2<T>& vec) { return Vector2<T>(t * vec.x, t * vec.y); }
 
-	bool operator==(const Vector2d& vec) const { return isEqual(x, vec.x) && isEqual(y, vec.y); }
-	bool operator!=(const Vector2d& vec) const { return !((*this) == vec); }
 
 	//negate each element
 	void negate()
@@ -77,36 +65,34 @@ public:
 	}
 
  	//dot product
-	double dot(const Vector2d& vec) const { return x * vec.x + y * vec.y; }
+	T dot(const Vector2<T>& vec) const { return x * vec.x + y * vec.y; }
+	//length of vector
+	float length() const { return sqrt(x * x + y * y); }
 	//normalization of vector
-	Vector2d& normalize()
+	Vector2<T>& normalize()
 	{
-		*this = (*this) * 1.0 / sqrt(x * x + y * y);
+		*this = (*this) * T(1) / length();
 		return *this;
 	}
-	//length of vector
-	double length() const { return sqrt(x * x + y * y); } 
 	//外法向量
-	Vector2d normal() const { return Vector2d(-y, x); }
-
-	//zero vector
-	static Vector2d zero() { return Vector2d(0.0, 0.0); } 
+	Vector2<T> normal() const { return Vector2<T>(-y, x); }
 };
 
-typedef Vector2d Point2d;
 
-class Vector3d
+template <typename T>
+class Vector3
 {
 public:
-	double x, y, z;
+	T x, y, z;
 
  	//declare constructor-initialize
-	Vector3d(double _x = 0.0, double _y = 0.0, double _z = 0.0) : x(_x), y(_y), z(_z) {}
+	Vector3() :x(0), y(0), z(0) {}
+	Vector3(T _x, T _y, T _z) : x(_x), y(_y), z(_z) {}
 	//copy constructor-initialize
-	Vector3d(const Vector3d& vec) : x(vec.x), y(vec.y), z(vec.z) {}	
+	Vector3(const Vector3<T>& vec) : x(vec.x), y(vec.y), z(vec.z) {}	
 
 	//assign operator overload
-	Vector3d& operator=(const Vector3d& vec)
+	Vector3<T>& operator=(const Vector3<T>& vec)
 	{
 		x = vec.x;
 		y = vec.y;
@@ -115,34 +101,34 @@ public:
 	}
 
 	//get vector that has reverse direction
-	Vector3d operator-() const { return Vector3d(-x, -y, -z); } 
-	Vector3d operator+(const Vector3d& vec) const { return Vector3d(x + vec.x, y + vec.y, z + vec.z); }
-	Vector3d operator-(const Vector3d& vec) const { return Vector3d(x - vec.x, y - vec.y, z - vec.z); }
-	Vector3d operator*(double t) const { return Vector3d(x * t, y * t, z * t); }
-	Vector3d operator/(double t) const { return Vector3d(x / t, y / t, z / t); }
+	Vector3<T> operator-() const { return Vector3<T>(-x, -y, -z); } 
+	Vector3<T> operator+(const Vector3<T>& vec) const { return Vector3<T>(x + vec.x, y + vec.y, z + vec.z); }
+	Vector3<T> operator-(const Vector3<T>& vec) const { return Vector3<T>(x - vec.x, y - vec.y, z - vec.z); }
+	Vector3<T> operator*(float t) const { return Vector3<T>(x * t, y * t, z * t); }
+	Vector3<T> operator/(float t) const { return Vector3<T>(x / t, y / t, z / t); }
 
-	Vector3d& operator+=(const Vector3d& vec)
+	Vector3<T>& operator+=(const Vector3<T>& vec)
 	{
 		x += vec.x;
 		y += vec.y;
 		z += vec.z;
 		return *this;
 	}
-	Vector3d& operator-=(const Vector3d& vec)
+	Vector3<T>& operator-=(const Vector3<T>& vec)
 	{
 		x -= vec.x;
 		y -= vec.y;
 		z -= vec.z;
 		return *this;
 	}
-	Vector3d& operator*=(double t)
+	Vector3<T>& operator*=(float t)
 	{
 		x *= t;
 		y *= t;
 		z *= t;
 		return *this;
 	}
-	Vector3d& operator/=(double t)
+	Vector3<T>& operator/=(float t)
 	{
 		x /= t;
 		y /= t;
@@ -150,10 +136,7 @@ public:
 		return *this;
 	}
 
-	friend Vector3d operator*(double t, const Vector3d& vec) { return Vector3d(t * vec.x, t * vec.y, t * vec.z); }
-
-	bool operator==(const Vector3d& vec) const { return isEqual(x, vec.x) && isEqual(y, vec.y) && isEqual(z, vec.z); }
-	bool operator!=(const Vector3d& vec) const { return !((*this) == vec); }
+	friend Vector3<T> operator*(float t, const Vector3<T>& vec) { return Vector3<T>(t * vec.x, t * vec.y, t * vec.z); }
 
 	//negate each element
 	void negate()
@@ -164,35 +147,34 @@ public:
 	}
 
 	//cross product
-	Vector3d cross(const Vector3d& vec) const { return Vector3d(y * vec.z - z * vec.y, z * vec.x - x * vec.z, x * vec.y - y * vec.x); } 
+	Vector3<T> cross(const Vector3<T>& vec) const { return Vector3<T>(y * vec.z - z * vec.y, z * vec.x - x * vec.z, x * vec.y - y * vec.x); }
 	//dot product
-	double dot(const Vector3d& vec) const { return x * vec.x + y * vec.y + z * vec.z; }												
+	T dot(const Vector3<T>& vec) const { return x * vec.x + y * vec.y + z * vec.z; }
+	//length of vector
+	float length() const { return sqrt(x * x + y * y + z * z); }
 	//normalization of vector
-	Vector3d& normalize()
+	Vector3<T>& normalize()
 	{
-		*this = (*this) * 1.0 / sqrt(x * x + y * y + z * z);
+		*this = (*this) * T(1) / length();
 		return *this;
 	}
-	//length of vector
-	double length() const { return sqrt(x * x + y * y + z * z); } 
-	//zero vector
-	static Vector3d zero() { return Vector3d(0.0, 0.0, 0.0); } 
 };
 
-typedef Vector3d Point3d;
 
-class Vector4d
+template <typename T>
+class Vector4
 {
 public:
-	double x, y, z, w;
+	T x, y, z, w;
 
 	//declare constructor-initialize
-	Vector4d(double _x = 0.0, double _y = 0.0, double _z = 0.0, double _w = 1.0) : x(_x), y(_y), z(_z), w(_w){}
+	Vector4() :x(0), y(0), z(0), w(1) {}
+	Vector4(T _x, T _y, T _z, T _w) : x(_x), y(_y), z(_z), w(_w) {}
 	//copy constructor-initialize
-	Vector4d(const Vector4d& vec) : x(vec.x), y(vec.y), z(vec.z), w(vec.w) {}
+	Vector4(const Vector4<T>& vec) : x(vec.x), y(vec.y), z(vec.z), w(vec.w) {}
 
 	//assign operator overload
-	Vector4d& operator=(const Vector4d& vec)
+	Vector4<T>& operator=(const Vector4<T>& vec)
 	{
 		x = vec.x;
 		y = vec.y;
@@ -202,13 +184,13 @@ public:
 	}
 
 	//get vector that has reverse direction
-	Vector4d operator-() const { return Vector4d(-x, -y, -z, -w); }
-	Vector4d operator+(const Vector4d& vec) const { return Vector4d(x + vec.x, y + vec.y, z + vec.z, w + vec.w); }
-	Vector4d operator-(const Vector4d& vec) const { return Vector4d(x - vec.x, y - vec.y, z - vec.z, w - vec.w); }
-	Vector4d operator*(double t) const { return Vector4d(x * t, y * t, z * t, w * t); }
-	Vector4d operator/(double t) const { return Vector4d(x / t, y / t, z / t, w / t); }
+	Vector4<T> operator-() const { return Vector4<T>(-x, -y, -z, -w); }
+	Vector4<T> operator+(const Vector4<T>& vec) const { return Vector4<T>(x + vec.x, y + vec.y, z + vec.z, w + vec.w); }
+	Vector4<T> operator-(const Vector4<T>& vec) const { return Vector4<T>(x - vec.x, y - vec.y, z - vec.z, w - vec.w); }
+	Vector4<T> operator*(float t) const { return Vector4<T>(x * t, y * t, z * t, w * t); }
+	Vector4<T> operator/(float t) const { return Vector4<T>(x / t, y / t, z / t, w / t); }
 
-	Vector4d& operator+=(const Vector4d& vec)
+	Vector4<T>& operator+=(const Vector4<T>& vec)
 	{
 		x += vec.x;
 		y += vec.y;
@@ -216,7 +198,7 @@ public:
 		w += vec.w;
 		return *this;
 	}
-	Vector4d& operator-=(const Vector4d& vec)
+	Vector4<T>& operator-=(const Vector4<T>& vec)
 	{
 		x -= vec.x;
 		y -= vec.y;
@@ -224,7 +206,7 @@ public:
 		w -= vec.w;
 		return *this;
 	}
-	Vector4d& operator*=(double t)
+	Vector4<T>& operator*=(float t)
 	{
 		x *= t;
 		y *= t;
@@ -232,7 +214,7 @@ public:
 		w *= t;
 		return *this;
 	}
-	Vector4d& operator/=(double t)
+	Vector4<T>& operator/=(float t)
 	{
 		x /= t;
 		y /= t;
@@ -241,10 +223,7 @@ public:
 		return *this;
 	}
 
-	friend Vector4d operator*(double t, const Vector4d& vec) { return Vector4d(t * vec.x, t * vec.y, t * vec.z, t*vec.w); }
-
-	bool operator==(const Vector4d& vec) const { return isEqual(x, vec.x) && isEqual(y, vec.y) && isEqual(z, vec.z) && isEqual(w, vec.z); }
-	bool operator!=(const Vector4d& vec) const { return !((*this) == vec); }
+	friend Vector4<T> operator*(float t, const Vector4<T>& vec) { return Vector4<T>(t * vec.x, t * vec.y, t * vec.z, t*vec.w); }
 
 	//negate each element
 	void negate()
@@ -256,28 +235,25 @@ public:
 	}
 
 	//dot product
-	double dot(const Vector4d& vec) const { return x * vec.x + y * vec.y + z * vec.z + w * vec.w; }
+	T dot(const Vector4<T>& vec) const { return x * vec.x + y * vec.y + z * vec.z + w * vec.w; }
+	//length of vector
+	float length() const { return sqrt(x * x + y * y + z * z + w * w); }
 	//normalization of vector
-	Vector4d& normalize()
+	Vector4<T>& normalize()
 	{
-		*this = (*this) * 1.0 / sqrt(x * x + y * y + z * z + w * w);
+		*this = (*this) * T(1) / sqrt(x * x + y * y + z * z + w * w);
 		return *this;
 	}
-	//length of vector
-	double length() const { return sqrt(x * x + y * y + z * z + w * w); }
-	//zero vector
-	static Vector4d zero() { return Vector4d(0.0, 0.0, 0.0, 0.0); }
 };
 
+typedef Vector2<int> Vector2i;
+typedef Vector2<float> Vector2f;
+typedef Vector3<int> Vector3i;
+typedef Vector3<float> Vector3f;
+typedef Vector4<int> Vector4i;
+typedef Vector4<float> Vector4f;
 
-inline Vector3d toVec3d(const Vector2d &vec2d)
-{
-	return Vector3d(vec2d.x, vec2d.y, 1.0);
-}
-
-inline Vector3d toVec3d(const Vector4d &vec4d)
-{
-	return Vector3d(vec4d.x, vec4d.y, vec4d.z);
-}
+typedef Vector2f Point2d;
+typedef Vector3f Point3d;
 
 #endif

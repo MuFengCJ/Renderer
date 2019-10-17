@@ -35,6 +35,6 @@ const char *get_extension(const char *filename);
 /*
 *  math functions
 */
-double lerp(double d0, double d1, double t);
+float lerp(float d0, float d1, float t);
 
 #endif

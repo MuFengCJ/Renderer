@@ -10,8 +10,8 @@ class Vertex
 {
 public:
 	Point3d position_;
-	Vector2d texCoord_;
-	Vector3d normal_;
+	Vector2 texCoord_;
+	Vector3 normal_;
 
 
 };
@@ -35,7 +35,7 @@ public:
 
 private:
 	int vertex_indics[3];
-	Vector3d normal_;
+	Vector3 normal_;
 };
 
 class Mesh

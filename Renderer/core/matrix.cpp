@@ -5,7 +5,7 @@ Matrix::Matrix(int row, int col)
 {
 	_rows = row;
 	_cols = col;
-	data = vector<vector<double>>(row, vector<double>(col, 0.0)); //(size, element);
+	data = vector<vector<float>>(row, vector<float>(col, 0.0)); //(size, element);
 }
 
 //copy constructor
@@ -18,11 +18,11 @@ Matrix::Matrix(const Matrix& mat)
 }
 
 // 以列向量方式存放，即矩阵 A(vec0, vec1, vec2, vec3)
-Matrix::Matrix(const Vector4d& vec0, const Vector4d& vec1, const Vector4d& vec2, const Vector4d& vec3)
+Matrix::Matrix(const Vector4f& vec0, const Vector4f& vec1, const Vector4f& vec2, const Vector4f& vec3)
 {
 	_rows = DEFAULT_ALLOC;
 	_cols = DEFAULT_ALLOC;
-	data = vector<vector<double>>(DEFAULT_ALLOC, vector<double>(DEFAULT_ALLOC, 0.0)); //(size, element);
+	data = vector<vector<float>>(DEFAULT_ALLOC, vector<float>(DEFAULT_ALLOC, 0.0)); //(size, element);
 	data[0][0] = vec0.x; data[0][1] = vec1.x; data[0][2] = vec2.x; data[0][3] = vec3.x;
 	data[1][0] = vec0.y; data[1][1] = vec1.y; data[1][2] = vec2.y; data[1][3] = vec3.y;
 	data[2][0] = vec0.z; data[2][1] = vec1.z; data[2][2] = vec2.z; data[2][3] = vec3.z;
@@ -55,7 +55,7 @@ Matrix Matrix::operator *(const Matrix& mat) const
 	return result;
 }
 
-Matrix Matrix::operator *(double t) const
+Matrix Matrix::operator *(float t) const
 {
 	Matrix result(_rows, _cols);
 	for (int i = 0; i < _rows; i++) {
@@ -66,7 +66,7 @@ Matrix Matrix::operator *(double t) const
 	return result;
 }
 
-Matrix operator *(double t, const Matrix& mat)
+Matrix operator *(float t, const Matrix& mat)
 {
 	Matrix result(mat.row(), mat.col());
 	for (int i = 0; i < mat.row(); i++) {
@@ -77,9 +77,9 @@ Matrix operator *(double t, const Matrix& mat)
 }
 
 //对矩阵列分块，然后右乘一个列向量
-Vector4d Matrix::operator *(const Vector4d& vec) const
+Vector4f Matrix::operator *(const Vector4f& vec) const
 {
-	Vector4d result;
+	Vector4f result;
 	result.x = data[0][0] * vec.x + data[0][1] * vec.y + data[0][2] * vec.z + data[0][3] * vec.w;
 	result.y = data[1][0] * vec.x + data[1][1] * vec.y + data[1][2] * vec.z + data[1][3] * vec.w;
 	result.z = data[2][0] * vec.x + data[2][1] * vec.y + data[2][2] * vec.z + data[2][3] * vec.w;
@@ -100,9 +100,9 @@ Matrix Matrix::transpose()
 }
 
 //默认计算3阶方阵的行列式
-double Matrix::det() const
+float Matrix::det() const
 {
-	double det = data[0][0] * (data[1][1] * data[2][2] - data[1][2] * data[2][1]) - data[0][1] * (data[1][0] * data[2][2] - data[1][2] * data[2][0])
+	float det = data[0][0] * (data[1][1] * data[2][2] - data[1][2] * data[2][1]) - data[0][1] * (data[1][0] * data[2][2] - data[1][2] * data[2][0])
 		+ data[0][2] * (data[1][0] * data[2][1] - data[1][1] * data[2][0]);
 	return det;
 }
@@ -110,7 +110,7 @@ double Matrix::det() const
 //默认求三阶可逆方针的逆矩阵
 bool Matrix::inverse()
 {
-	double det = this->det();
+	float det = this->det();
 	if (det == 0)
 		return false;
 
@@ -127,7 +127,7 @@ bool Matrix::inverse()
 	adjoint.data[1][2] = -(data[0][0] * data[1][2] - data[0][2] * data[1][0]);
 	adjoint.data[2][2] = data[0][0] * data[1][1] - data[0][1] * data[1][0];
 
-	det = 1.0 / det;
+	det = 1.0f / det;
 
 	for (int i = 0; i < 3; i++)
 		for (int j = 0; j < 3; j++)

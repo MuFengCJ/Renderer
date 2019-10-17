@@ -14,7 +14,7 @@ class Matrix
 {
 private:
 	int _rows, _cols;
-	vector<vector<double>> data;
+	vector<vector<float>> data;
 
 public:
 	//declare constructor
@@ -22,18 +22,18 @@ public:
 	//copy constructor
 	Matrix(const Matrix& mat);
 	// 以列向量方式存放，即矩阵 A(vec0, vec1, vec2, vec3)
-	Matrix(const Vector4d& vec0, const Vector4d& vec1, const Vector4d& vec2, const Vector4d& vec3);
+	Matrix(const Vector4f& vec0, const Vector4f& vec1, const Vector4f& vec2, const Vector4f& vec3);
 
 	//assign operator overload
 	Matrix& operator =(const Matrix& mat);
 
-	vector<double>& operator [](int i) { assert(i >= 0 && i < _rows); return data[i]; }
+	vector<float>& operator [](int i) { assert(i >= 0 && i < _rows); return data[i]; }
 
 	Matrix operator *(const Matrix& mat) const;
-	Matrix operator *(double t) const;
-	friend Matrix operator *(double t, const Matrix& mat);
+	Matrix operator *(float t) const;
+	friend Matrix operator *(float t, const Matrix& mat);
 	//对矩阵列分块，然后右乘一个列向量
-	Vector4d operator *(const Vector4d& vec) const;
+	Vector4f operator *(const Vector4f& vec) const;
 
 	//return rows of matrix
 	int row() const { return _rows; } 
@@ -43,7 +43,7 @@ public:
 	//transpose
 	Matrix transpose();
 	//默认计算3阶方阵的行列式
-	double det() const;
+	float det() const;
 	//默认求三阶可逆方针的逆矩阵
 	bool inverse();
 
@@ -53,7 +53,7 @@ public:
 		Matrix result(n, n);
 		for (int i = 0; i < n; i++){
 			for (int j = 0; j < n; j++){
-				result[i][j] = (i == j ? 1.0 : 0.0);
+				result[i][j] = (i == j ? 1.0f : 0.0f);
 			}
 		}
 		return result;
@@ -72,7 +72,7 @@ public:
 	}
 
 	//Scale Transformation Matrix
-	static Matrix scaleMatrix(double xScale, double yScale, double zScale)
+	static Matrix scaleMatrix(float xScale, float yScale, float zScale)
 	{
 		Matrix result = identity(DEFAULT_ALLOC);
 		result[0][0] = xScale;
