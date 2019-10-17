@@ -216,14 +216,14 @@ void Window::reset_buffer() const
 	memset(back_buffer_, 0, width_ * height_ * 4);
 }
 
-void Window::draw(Image *image) const
+void Window::display(Image *image) const
 {
 	reset_buffer();
 	blit_image_bgr(image, width_, height_, back_buffer_);
 	swap_buffer();
 }
 
-void Window::draw(FrameBuffer* framebuffer) const
+void Window::display(FrameBuffer* framebuffer) const
 {
 	reset_buffer();
 	blit_frame_bgr(framebuffer, width_, height_, back_buffer_);

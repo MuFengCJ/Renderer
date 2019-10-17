@@ -1,7 +1,12 @@
 #include "utils.h"
 #include <assert.h>
 #include <algorithm>
+#include "image.h"
+#include "renderer.h"
 #include "color.h"
+
+using std::min;
+using std::max;
 
 Byte read_byte(FILE *file)
 {
@@ -86,8 +91,8 @@ void save_tga(const Image *image, const char *filePath)
 */
 void blit_image_bgr(Image *src, int buffer_width, int buffer_height, Byte* buffer)
 {
-	int width = std::min(src->width(), buffer_width);
-	int height = std::min(src->height(), buffer_height);
+	int width = min(src->width(), buffer_width);
+	int height = min(src->height(), buffer_height);
 	int row, col;
 
 	assert(width > 0 && height > 0);
@@ -113,8 +118,8 @@ void blit_image_bgr(Image *src, int buffer_width, int buffer_height, Byte* buffe
 
 void blit_image_rgb(Image *src, int buffer_width, int buffer_height, Byte* buffer)
 {
-	int width = std::min(src->width(), buffer_width);
-	int height = std::min(src->height(), buffer_height);
+	int width = min(src->width(), buffer_width);
+	int height = min(src->height(), buffer_height);
 	int row, col;
 
 	assert(width > 0 && height > 0);
@@ -140,8 +145,8 @@ void blit_image_rgb(Image *src, int buffer_width, int buffer_height, Byte* buffe
 
 void blit_frame_bgr(FrameBuffer* src, int buffer_width, int buffer_height, Byte* buffer)
 {
-	int width = std::min(src->width(), buffer_width);
-	int height = std::min(src->height(), buffer_height);
+	int width = min(src->width(), buffer_width);
+	int height = min(src->height(), buffer_height);
 	int row, col;
 
 	assert(width > 0 && height > 0);
@@ -158,4 +163,15 @@ void blit_frame_bgr(FrameBuffer* src, int buffer_width, int buffer_height, Byte*
 			buffer[dst_pixel_index + 2] = src_pixel.r * 255;  /* red */
 		}
 	}
+}
+
+const char *get_extension(const char *filename)
+{
+	const char *dot_pos = strrchr(filename, '.');
+	return dot_pos == NULL ? "" : dot_pos + 1;
+}
+
+double lerp(double d0, double d1, double t)
+{
+	return d0 + (d1 - d0) * t;
 }

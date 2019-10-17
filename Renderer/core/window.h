@@ -25,8 +25,8 @@ public:
 	~Window();
 
 	//display function
-	void draw(Image* image) const;
-	void draw(FrameBuffer* framebuffer) const;
+	void display(Image* image) const;
+	void display(FrameBuffer* framebuffer) const;
 
 	//input message reponse
 	void poll_events() const;

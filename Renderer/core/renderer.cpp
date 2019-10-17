@@ -1,12 +1,13 @@
 #include "renderer.h"
 #include <assert.h>
 #include <algorithm>
+#include "window.h"
 #include "color.h"
 
 FrameBuffer::FrameBuffer(int width, int height)
 {
-	width_ = width;	   //correspond to x axis
-	height_ = height;   //correspond to y axis
+	width_ = width;	   //corresponding to x axis
+	height_ = height;   //corresponding to y axis
 	pixel_colors_ = vector<vector<Color>>(width, vector<Color>(height, Color::Black));
 }
 
@@ -22,7 +23,23 @@ void FrameBuffer::put_pixel(int x, int y, Color color)
 	pixel_colors_[x][y] = color; 
 }
 
-void rasterize_line(int x0, int y0, int x1, int y1, Color color, FrameBuffer* framebuffer)
+Renderer::Renderer(/*const char *name, */int width, int height)
+{
+	framebuffer_ = new FrameBuffer(width, height);
+	render_target_ = NULL;
+}
+
+Renderer::~Renderer()
+{
+	delete framebuffer_;
+}
+
+void Renderer::render() const
+{
+	draw_line(20, 30, 220, 220, Color::Cyan);
+}
+
+static void rasterize_line(int x0, int y0, int x1, int y1, Color color, FrameBuffer* framebuffer)
 {
 	bool steep = false;
 	if (std::abs(x1 - x0) < std::abs(y1 - y0)) { //表明斜率绝对值大于1，则相对于直线 y=x 做一个对称变换，最后画图时再恢复
@@ -53,4 +70,19 @@ void rasterize_line(int x0, int y0, int x1, int y1, Color color, FrameBuffer* fr
 			error -= 2 * deltaX;
 		}
 	}
+}
+
+static void rasterize_triangle()
+{
+
+}
+
+void Renderer::draw_line(int x0, int y0, int x1, int y1, Color color) const
+{
+	rasterize_line(x0, y0, x1, y1, color, framebuffer_);
+}
+
+void Renderer::draw_triangle() const
+{
+
 }

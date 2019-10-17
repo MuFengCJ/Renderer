@@ -136,6 +136,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="app\app.cpp" />
     <ClCompile Include="core\color.cpp" />
     <ClCompile Include="core\image.cpp" />
     <ClCompile Include="core\matrix.cpp" />
@@ -146,6 +147,7 @@
     <ClCompile Include="platform\win32.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="app\app.h" />
     <ClInclude Include="core\color.h" />
     <ClInclude Include="core\image.h" />
     <ClInclude Include="core\matrix.h" />

@@ -16,6 +16,9 @@
     <Filter Include="platform">
       <UniqueIdentifier>{109330e3-d5c7-48dc-9001-6083ff438e05}</UniqueIdentifier>
     </Filter>
+    <Filter Include="application">
+      <UniqueIdentifier>{db657910-d405-4023-ac65-70af6b4f364b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -41,6 +44,9 @@
     </ClCompile>
     <ClCompile Include="core\color.cpp">
       <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="app\app.cpp">
+      <Filter>application</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -76,6 +82,9 @@
     </ClInclude>
     <ClInclude Include="core\geometry.h">
       <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="app\app.h">
+      <Filter>application</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

@@ -2,8 +2,11 @@
 #define UTILS_H
 
 #include <stdio.h>
-#include "image.h"
-#include "renderer.h"
+
+class Image;
+class FrameBuffer;
+typedef unsigned char Byte;
+
 /*
 *  read/write file
 */
@@ -27,17 +30,11 @@ void blit_frame_bgr(FrameBuffer* src, int buffer_width, int buffer_height, Byte*
 /*
 *  misc functions 
 */
-inline const char *get_extension(const char *filename) 
-{
-	const char *dot_pos = strrchr(filename, '.');
-	return dot_pos == NULL ? "" : dot_pos + 1;
-}
+const char *get_extension(const char *filename);
 
 /*
 *  math functions
 */
-inline double lerp(double d0, double d1, double t) 
-{
-	return d0 + (d1 - d0) * t;
-}
+double lerp(double d0, double d1, double t);
+
 #endif

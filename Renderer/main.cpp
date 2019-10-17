@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include "app/app.h"
 #include "core/window.h"
 #include "core/image.h"
 #include "core/renderer.h"
@@ -72,7 +73,7 @@ inline void scrollCallBack(Window *window, float offset)
 	printf("scroll offset = %f\n", offset);
 }
 
-#if 1
+#if 0
 int main(void) 
 {
 	CallBacks testCallBacks;
@@ -84,10 +85,10 @@ int main(void)
 	window->set_callbacks(testCallBacks);
 
 	image = new Image();
-	image->loadFromFile("test2.tga"/*"demo.png"*/);
+	image->loadFromFile("test.tga"/*"demo.png"*/);
 
 	while (!window->should_close()) {
-		window->draw(image);
+		window->display(image);
 		window->poll_events();
 	}
 
@@ -99,18 +100,16 @@ int main(void)
 #else
 int main()
 {
-	Window *window = new Window("Render", 800, 600);
+	App *app = new App("SoftRenderer", 800, 600);
 
-	FrameBuffer* frame = new FrameBuffer(800, 600);
-	rasterize_line(30, 20, 220, 220, Color::Red, frame);
+	Renderer* renderer = new Renderer(800, 600);
+	app->set_renderer(renderer);
 
-	while (!window->should_close()) {
-		window->draw(frame);
-		window->poll_events();
-	}
+	app->init();
 
-	delete frame;
-	delete window;
+	app->start();
+
+	delete app;
 
 	return 0;
 }
