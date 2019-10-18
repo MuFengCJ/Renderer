@@ -8,46 +8,47 @@
 
 using std::vector;
 
-const int DEFAULT_ALLOC = 4; //默认为4阶矩阵
+//default as 4x4 Matrix
+const int Dimension = 4;
 
 class Matrix
 {
 private:
-	int _rows, _cols;
-	vector<vector<float>> data;
+	int rows_, cols_;
+	vector<vector<float>> data_;
 
 public:
 	//declare constructor
-	Matrix(int row = DEFAULT_ALLOC, int col = DEFAULT_ALLOC);
+	Matrix(int row = Dimension, int col = Dimension);
 	//copy constructor
 	Matrix(const Matrix& mat);
-	// 以列向量方式存放，即矩阵 A(vec0, vec1, vec2, vec3)
+	//stored as column vector，eg. A(vec0, vec1, vec2, vec3)
 	Matrix(const Vector4f& vec0, const Vector4f& vec1, const Vector4f& vec2, const Vector4f& vec3);
 
 	//assign operator overload
 	Matrix& operator =(const Matrix& mat);
 
-	vector<float>& operator [](int i) { assert(i >= 0 && i < _rows); return data[i]; }
+	vector<float>& operator [](int i) { assert(i >= 0 && i < rows_); return data_[i]; }
 
 	Matrix operator *(const Matrix& mat) const;
 	Matrix operator *(float t) const;
 	friend Matrix operator *(float t, const Matrix& mat);
-	//对矩阵列分块，然后右乘一个列向量
+	//right multiply Matrix by column vector
 	Vector4f operator *(const Vector4f& vec) const;
 
 	//return rows of matrix
-	int row() const { return _rows; } 
+	int row() const { return rows_; } 
 	//return columns of matrix
-	int col() const { return _cols; } 
+	int col() const { return cols_; } 
 
 	//transpose
 	Matrix transpose();
-	//默认计算3阶方阵的行列式
+	//determinant
 	float det() const;
-	//默认求三阶可逆方针的逆矩阵
+	//inverse
 	bool inverse();
 
-	//单位阵
+	//identity Matrix
 	static Matrix identity(int n)
 	{
 		Matrix result(n, n);
@@ -74,7 +75,7 @@ public:
 	//Scale Transformation Matrix
 	static Matrix scaleMatrix(float xScale, float yScale, float zScale)
 	{
-		Matrix result = identity(DEFAULT_ALLOC);
+		Matrix result = identity(Dimension);
 		result[0][0] = xScale;
 		result[1][1] = yScale;
 		result[2][2] = zScale;

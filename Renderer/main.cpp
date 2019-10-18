@@ -73,7 +73,7 @@ inline void scrollCallBack(Window *window, float offset)
 	printf("scroll offset = %f\n", offset);
 }
 
-#if 0
+#if 1
 int main(void) 
 {
 	CallBacks testCallBacks;
