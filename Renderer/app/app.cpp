@@ -18,13 +18,13 @@ App::~App()
 	delete renderer_;
 }
 
-void App::init() const
+void App::Init() const
 {
 	//set window callbacks
 	CallBacks callbacks;
-	callbacks.key_callback = key_callback;
-	callbacks.button_callback = button_callback;
-	callbacks.scroll_callback = scroll_callback;
+	callbacks.KeyCallback = KeyCallback;
+	callbacks.ButtonCallback = ButtonCallback;
+	callbacks.ScrollCallback = ScrollCallback;
 	window_->set_callbacks(callbacks);
 
 	if (renderer_) {
@@ -32,26 +32,26 @@ void App::init() const
 	}
 }
 
-void App::start() const
+void App::Start() const
 {
 	//main render loop
 	while (!window_->should_close()) {
-		update();
+		Update();
 	}
 }
 
-void App::update()
+void App::Update()
 {
 	//run user renderer
 	if (renderer_) {
-		renderer_->render();
+		renderer_->Render();
 	}
 
 	//display rendering result on screen
-	window_->display(renderer_->framebuffer());
+	window_->Display(renderer_->framebuffer());
 
 	//poll events
-	window_->poll_events();
+	window_->PollEvents();
 }
 
 void App::set_renderer(Renderer* renderer)
@@ -59,17 +59,21 @@ void App::set_renderer(Renderer* renderer)
 	renderer_ = renderer;
 }
 
-void App::key_callback(Window *window, KeyCode key, bool pressed)
+void App::KeyCallback(Window *window, KeyCode key, bool pressed)
 {
-	//renderer_->key_events(key, pressed);
+	renderer_->KeyEventResponse(key, pressed);
 }
 
-void App::button_callback(Window *window, Button button, bool pressed)
+void App::ButtonCallback(Window *window, Button button, bool pressed)
 {
-	//renderer_->button_events(button, pressed);
+	float pos_x, pos_y;
+	window->CursorPos(pos_x, pos_y);
+	printf("cursor x: %f, y: %f\n", pos_x, pos_y);
+
+	renderer_->ButtonEventResponse(button, pressed);
 }
 
-void App::scroll_callback(Window *window, float offset)
+void App::ScrollCallback(Window *window, float offset)
 {
-	//renderer_->scroll_events(offset);
+	renderer_->ScrollEventResponse(offset);
 }

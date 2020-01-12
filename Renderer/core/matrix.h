@@ -42,14 +42,14 @@ public:
 	int col() const { return cols_; } 
 
 	//transpose
-	Matrix transpose();
+	Matrix Transpose();
 	//determinant
-	float det() const;
+	float Det() const;
 	//inverse
-	bool inverse();
+	bool Inverse();
 
 	//identity Matrix
-	static Matrix identity(int n)
+	static Matrix Identity(int n)
 	{
 		Matrix result(n, n);
 		for (int i = 0; i < n; i++){
@@ -61,7 +61,7 @@ public:
 	}
 
 	//zero Matrix
-	static Matrix zeroMatrix(int n)
+	static Matrix ZeroMatrix(int n)
 	{
 		Matrix result(n, n);
 		for (int i = 0; i < n; i++) {
@@ -73,9 +73,9 @@ public:
 	}
 
 	//Scale Transformation Matrix
-	static Matrix scaleMatrix(float xScale, float yScale, float zScale)
+	static Matrix ScaleMatrix(float xScale, float yScale, float zScale)
 	{
-		Matrix result = identity(Dimension);
+		Matrix result = Identity(Dimension);
 		result[0][0] = xScale;
 		result[1][1] = yScale;
 		result[2][2] = zScale;
@@ -83,12 +83,12 @@ public:
 	}
 
 	//Rotate Transformation Matrix
-	static Matrix rotateMatrix()
+	static Matrix RotateMatrix()
 	{
 
 	}
 
-	static Matrix translateMatrix()
+	static Matrix TranslateMatrix()
 	{
 
 	}

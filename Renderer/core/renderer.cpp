@@ -11,13 +11,13 @@ FrameBuffer::FrameBuffer(int width, int height)
 	pixel_colors_ = vector<vector<Color>>(width, vector<Color>(height, Color::Black));
 }
 
-Color FrameBuffer::get_pixel(int x, int y) const
+Color FrameBuffer::GetPixel(int x, int y) const
 {
 	assert(x < width_ && y < height_);
 	return pixel_colors_[x][y];
 }
 
-void FrameBuffer::put_pixel(int x, int y, Color color) 
+void FrameBuffer::SetPixel(int x, int y, Color color) 
 { 
 	assert(x < width_ && y < height_); 
 	pixel_colors_[x][y] = color; 
@@ -34,9 +34,9 @@ Renderer::~Renderer()
 	delete framebuffer_;
 }
 
-void Renderer::render() const
+void Renderer::Render() const
 {
-	draw_line(20, 30, 220, 220, Color::Cyan);
+	DrawLine(20, 30, 220, 220, Color::Cyan);
 }
 
 static void rasterize_line(int x0, int y0, int x1, int y1, Color color, FrameBuffer* framebuffer)
@@ -60,9 +60,9 @@ static void rasterize_line(int x0, int y0, int x1, int y1, Color color, FrameBuf
 
 	for (int x = x0; x <= x1; x++) {
 		if (steep)
-			framebuffer->put_pixel(y, x, color);
+			framebuffer->SetPixel(y, x, color);
 		else
-			framebuffer->put_pixel(x, y, color);
+			framebuffer->SetPixel(x, y, color);
 
 		error += deltaError;
 		if (error > deltaX) {
@@ -77,12 +77,67 @@ static void rasterize_triangle()
 
 }
 
-void Renderer::draw_line(int x0, int y0, int x1, int y1, Color color) const
+void Renderer::DrawLine(int x0, int y0, int x1, int y1, Color color) const
 {
 	rasterize_line(x0, y0, x1, y1, color, framebuffer_);
 }
 
-void Renderer::draw_triangle() const
+void Renderer::DrawTriangle() const
 {
 
+}
+
+void Renderer::KeyEventResponse(KeyCode key, bool pressed) const
+{
+	switch (key)
+	{
+	case KEY_A:
+		if (pressed) {
+			printf("Key \'A\' pressed\n");
+		}
+		else {
+			printf("Key \'A\' unPressed\n");
+		}
+		break;
+	case KEY_D:
+		if (pressed) {
+			printf("Key \'D\' pressed\n");
+		}
+		else {
+			printf("Key \'D\' unPressed\n");
+		}
+		break;
+	default:
+		break;
+	}
+}
+
+void Renderer::ButtonEventResponse(Button button, bool pressed) const
+{
+	switch (button)
+	{
+	case BUTTON_L:
+		if (pressed) {
+			printf("LeftButton pressed\n");
+		}
+		else {
+			printf("LeftButton unPressed\n");
+		}
+		break;
+	case BUTTON_R:
+		if (pressed) {
+			printf("RightButton pressed\n");
+		}
+		else {
+			printf("RightButton unPressed\n");
+		}
+		break;
+	default:
+		break;
+	}
+}
+
+void Renderer::ScrollEventResponse(float offset) const
+{
+	printf("scroll offset = %f\n", offset);
 }

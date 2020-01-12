@@ -9,13 +9,13 @@
 static Image* image;
 
 //按键按下去时一直处于 pressed = true 响应状态，松开时有一次 pressed = false 响应
-inline void keyCallBack(Window *window, KeyCode key, bool pressed)
+inline void KeyCallBack(Window *window, KeyCode key, bool pressed)
 {
 	switch (key)
 	{
 	case KEY_A:
 		if (pressed) {
-			image->resize(image->width()*1.5, image->height()*1.5);
+			image->Resize(image->width()*1.5, image->height()*1.5);
 			printf("Key \'A\' pressed\n");
 		}
 		else {
@@ -24,7 +24,7 @@ inline void keyCallBack(Window *window, KeyCode key, bool pressed)
 		break;
 	case KEY_D:
 		if (pressed) {
-			image->resize(image->width() / 1.5, image->height() / 1.5);
+			image->Resize(image->width() / 1.5, image->height() / 1.5);
 			printf("Key \'D\' pressed\n");
 		}
 		else {
@@ -37,25 +37,25 @@ inline void keyCallBack(Window *window, KeyCode key, bool pressed)
 }
 
 //鼠标点击时有一次 pressed = true 响应，松开时有一次 pressed = false 响应
-inline void buttonCallBack(Window *window, Button button, bool pressed)
+inline void ButtonCallBack(Window *window, Button button, bool pressed)
 {
 	switch (button)
 	{
 	case BUTTON_L:
 		if (pressed) {
-			image->flipHorizontal();
+			image->FlipHorizontal();
 			printf("LeftButton pressed\n");
 		}
 		else {
 			float xpos, ypos;
-			window->cursor_pos(xpos, ypos);
+			window->CursorPos(xpos, ypos);
 			printf("cursor x: %f, y: %f\n", xpos, ypos);
 			printf("LeftButton unPressed\n");
 		}
 		break;
 	case BUTTON_R:
 		if (pressed) {
-			image->flipVertical();
+			image->FlipVertical();
 			printf("RightButton pressed\n");
 		}
 		else {
@@ -68,28 +68,28 @@ inline void buttonCallBack(Window *window, Button button, bool pressed)
 }
 
 //鼠标滚轮滚动一次就对应一次响应
-inline void scrollCallBack(Window *window, float offset)
+inline void ScrollCallBack(Window *window, float offset)
 {
 	printf("scroll offset = %f\n", offset);
 }
 
-#if 1
+#if 0
 int main(void) 
 {
-	CallBacks testCallBacks;
-	testCallBacks.key_callback = keyCallBack;
-	testCallBacks.button_callback = buttonCallBack;
-	testCallBacks.scroll_callback = scrollCallBack;
+	CallBacks test_callbacks;
+	test_callbacks.KeyCallback = KeyCallBack;
+	test_callbacks.ButtonCallback = ButtonCallBack;
+	test_callbacks.ScrollCallback = ScrollCallBack;
 
 	Window *window = new Window("Render", 800, 600);
-	window->set_callbacks(testCallBacks);
+	window->set_callbacks(test_callbacks);
 
 	image = new Image();
-	image->loadFromFile("test.tga"/*"demo.png"*/);
+	image->LoadFromFile("test.tga"/*"demo.png"*/);
 
 	while (!window->should_close()) {
-		window->display(image);
-		window->poll_events();
+		window->Display(image);
+		window->PollEvents();
 	}
 
 	delete image;
@@ -105,9 +105,9 @@ int main()
 	Renderer* renderer = new Renderer(800, 600);
 	app.set_renderer(renderer);
 
-	app.init();
+	app.Init();
 
-	app.start();
+	app.Start();
 
 	return 0;
 }

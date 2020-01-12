@@ -8,33 +8,33 @@
 using std::min;
 using std::max;
 
-Byte read_byte(FILE *file)
+Byte ReadByte(FILE *file)
 {
 	int byte = fgetc(file);
 	assert(byte != EOF);
 	return (unsigned char)byte;
 }
 
-void read_bytes(FILE *file, void *buffer, int size)
+void ReadBytes(FILE *file, void *buffer, int size)
 {
 	int count = (int)fread(buffer, 1, size, file);
 	assert(count == size);
 }
 
-void write_bytes(FILE *file, void *buffer, int size)
+void WriteBytes(FILE *file, void *buffer, int size)
 {
 	int count = (int)fwrite(buffer, 1, size, file);
 	assert(count == size);
 }
 
-void load_tga(FILE *file, Image *image)
+void LoadTGA(FILE *file, Image *image)
 {
 	Byte *buffer = image->data();
 	int channels = image->channels();
 	int buffer_size = image->data_size();
 	int elem_count = 0;
 	while (elem_count < buffer_size) {
-		Byte header = read_byte(file);
+		Byte header = ReadByte(file);
 		int rle_packet = header & 0x80;
 		int pixel_count = (header & 0x7F) + 1;
 		Byte pixel[4];
@@ -42,7 +42,7 @@ void load_tga(FILE *file, Image *image)
 		assert(elem_count + pixel_count * channels <= buffer_size);
 		if (rle_packet) {  /* rle packet */
 			for (j = 0; j < channels; j++) {
-				pixel[j] = read_byte(file);
+				pixel[j] = ReadByte(file);
 			}
 			for (i = 0; i < pixel_count; i++) {
 				for (j = 0; j < channels; j++) {
@@ -53,7 +53,7 @@ void load_tga(FILE *file, Image *image)
 		else {           /* raw packet */
 			for (i = 0; i < pixel_count; i++) {
 				for (j = 0; j < channels; j++) {
-					buffer[elem_count++] = read_byte(file);
+					buffer[elem_count++] = ReadByte(file);
 				}
 			}
 		}
@@ -61,7 +61,7 @@ void load_tga(FILE *file, Image *image)
 	assert(elem_count == buffer_size);
 }
 
-void save_tga(const Image *image, const char *filePath)
+void SaveTGA(const Image *image, const char *filePath)
 {
 	Byte header[TGA_HEADER_SIZE];
 	FILE *file;
@@ -76,9 +76,9 @@ void save_tga(const Image *image, const char *filePath)
 	header[14] = image->height() & 0xFF;            /* height, lsb */
 	header[15] = (image->height() >> 8) & 0xFF;     /* height, msb */
 	header[16] = (image->channels() * 8) & 0xFF;    /* image depth */
-	write_bytes(file, header, TGA_HEADER_SIZE);
+	WriteBytes(file, header, TGA_HEADER_SIZE);
 
-	write_bytes(file, image->data(), image->data_size());
+	WriteBytes(file, image->data(), image->data_size());
 	fclose(file);
 }
 
@@ -101,7 +101,7 @@ void blit_image_bgr(Image *src, int buffer_width, int buffer_height, Byte* buffe
 	for (row = 0; row < height; row++) {
 		for (col = 0; col < width; col++) {
 			int flipped_row = src->height() - 1 - row;
-			Byte *src_pixel = src->get_pixel(col, flipped_row);
+			Byte *src_pixel = src->GetPixel(col, flipped_row);
 			int dst_pixel_index = row * buffer_width * 4 + col * 4;
 			if (src->channels() == 3 || src->channels() == 4) {
 				buffer[dst_pixel_index + 0] = src_pixel[0];  /* blue */
@@ -128,7 +128,7 @@ void blit_image_rgb(Image *src, int buffer_width, int buffer_height, Byte* buffe
 	for (row = 0; row < height; row++) {
 		for (col = 0; col < width; col++) {
 			int flipped_row = src->height() - 1 - row;
-			Byte *src_pixel = src->get_pixel(col, flipped_row);
+			Byte *src_pixel = src->GetPixel(col, flipped_row);
 			int dst_pixel_index = row * buffer_width * 4 + col * 4;
 			if (src->channels() == 3 || src->channels() == 4) {
 				buffer[dst_pixel_index + 0] = src_pixel[2];  /* red */
@@ -155,7 +155,7 @@ void blit_frame_bgr(FrameBuffer* src, int buffer_width, int buffer_height, Byte*
 		for (col = 0; col < width; col++) {
 			//window origin is topLeft while frame and image are default as bottomLeft
 			int flipped_row = src->height() - 1 - row;
-			Color src_pixel = src->get_pixel(col, flipped_row);
+			Color src_pixel = src->GetPixel(col, flipped_row);
 			int dst_pixel_index = row * buffer_width * 4 + col * 4;
 
 			buffer[dst_pixel_index + 0] = src_pixel.b * 255;  /* blue */
@@ -165,13 +165,13 @@ void blit_frame_bgr(FrameBuffer* src, int buffer_width, int buffer_height, Byte*
 	}
 }
 
-const char *get_extension(const char *filename)
+const char *GetExtension(const char *filename)
 {
 	const char *dot_pos = strrchr(filename, '.');
 	return dot_pos == NULL ? "" : dot_pos + 1;
 }
 
-float lerp(float d0, float d1, float t)
+float Lerp(float d0, float d1, float t)
 {
 	return d0 + (d1 - d0) * t;
 }

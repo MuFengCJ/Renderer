@@ -11,11 +11,11 @@ class Window;
 typedef unsigned char Byte;
 typedef enum { KEY_A = 0, KEY_D, KEY_S, KEY_W, KEY_SPACE, KEY_NUM } KeyCode;
 typedef enum { BUTTON_L = 0, BUTTON_R, BUTTON_NUM } Button;
-//function pointer
+// message response function pointer
 typedef struct {
-	void(*key_callback)(Window *window, KeyCode key, bool pressed);
-	void(*button_callback)(Window *window, Button button, bool pressed);
-	void(*scroll_callback)(Window *window, float offset);
+	void(*KeyCallback)(Window *window, KeyCode key, bool pressed);
+	void(*ButtonCallback)(Window *window, Button button, bool pressed);
+	void(*ScrollCallback)(Window *window, float offset);
 } CallBacks;
 
 class Window
@@ -24,13 +24,14 @@ public:
 	Window(const char *title, int width, int height);
 	~Window();
 
-	//display function
-	void display(Image* image) const;
-	void display(FrameBuffer* framebuffer) const;
+	// display function
+	void Display(Image* image) const;
+	void Display(FrameBuffer* framebuffer) const;
 
-	//input message reponse
-	void poll_events() const;
-	void cursor_pos(float &xpos, float &ypos) const;
+	// monitor input message
+	void PollEvents() const;
+	// get cursor pos within window
+	void CursorPos(float &xpos, float &ypos) const;
 
 	// member variable access function
 	int width() const { return width_; }
@@ -48,20 +49,16 @@ public:
 	void set_userdata(void* userdata) { userdata_ = userdata; }
 	
 private:
-	void init_buffer(int width, int height);
-	void reset_buffer() const;
-	void swap_buffer() const;
+	void InitBuffer(int width, int height);
+	void ResetBuffer() const;
+	void SwapBuffer() const;
 
-	HWND handle_;
-	HDC memory_dc_;	//memory device context
-	Byte* back_buffer_;	//pre-rendered buffer; RGBA 4 channels, associated with memory_dc_, auto deleted by system
-
-	/* common data of different platform */
+	// common variable of different platform
 	int width_;
 	int height_;
 	bool should_close_;
-	bool keys_[KEY_NUM]; //whether specific key is pressed
-	bool buttons_[BUTTON_NUM]; //whether specific button is pressed
+	bool keys_[KEY_NUM]; // whether specific key is pressed
+	bool buttons_[BUTTON_NUM]; // whether specific button is pressed
 	CallBacks callbacks_;
 	void *userdata_;
 };

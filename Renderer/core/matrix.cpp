@@ -86,7 +86,7 @@ Vector4f Matrix::operator *(const Vector4f& vec) const
 	return result;
 }
 
-Matrix Matrix::transpose()
+Matrix Matrix::Transpose()
 {
 	Matrix result;
 	for (int i = 0; i < result.row(); i++)
@@ -96,16 +96,16 @@ Matrix Matrix::transpose()
 	return result;
 }
 
-float Matrix::det() const
+float Matrix::Det() const
 {
 	float det = data_[0][0] * (data_[1][1] * data_[2][2] - data_[1][2] * data_[2][1]) - data_[0][1] * (data_[1][0] * data_[2][2] - data_[1][2] * data_[2][0])
 		+ data_[0][2] * (data_[1][0] * data_[2][1] - data_[1][1] * data_[2][0]);
 	return det;
 }
 
-bool Matrix::inverse()
+bool Matrix::Inverse()
 {
-	float det = this->det();
+	float det = this->Det();
 	if (det == 0)
 		return false;
 

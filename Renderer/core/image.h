@@ -15,15 +15,15 @@ class Image
 
 	 Image& operator=(const Image& image);
 
-	 void loadFromFile(const char *filePath);
-	 void saveAsFile(const char *filePath) const ;
+	 void LoadFromFile(const char *filePath);
+	 void SaveAsFile(const char *filePath) const ;
 
-	 void flipHorizontal() const; //flip left and right
-	 void flipVertical() const;	//flip up and down
-	 void resize(int width, int height);
-	 void reset() const;
+	 void FlipHorizontal() const; //flip left and right
+	 void FlipVertical() const;	//flip up and down
+	 void Resize(int width, int height);
+	 void Reset() const;
 
-	 Byte *get_pixel(int x, int y) const;
+	 Byte *GetPixel(int x, int y) const;
 
 	int width() const { return width_; }
 	int height() const { return height_; }
@@ -38,7 +38,7 @@ class Image
 
 
 private:
-	void loadFromTGA(const char *filePath);
+	void LoadFromTGA(const char *filePath);
 
 	int width_;
 	int height_;

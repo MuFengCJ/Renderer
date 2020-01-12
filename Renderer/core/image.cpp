@@ -55,7 +55,7 @@ Image& Image::operator=(const Image& image)
 	return *this;
 }
 
-Byte* Image::get_pixel(int x, int y) const
+Byte* Image::GetPixel(int x, int y) const
 {
 	int index = y * width_ * channels_ + x * channels_;
 	return &(data_[index]);
@@ -68,7 +68,7 @@ Byte* Image::get_pixel(int x, int y) const
 /*
 *  tga format
 */
-void Image::loadFromTGA(const char *filePath)
+void Image::LoadFromTGA(const char *filePath)
 {
 	Byte header[TGA_HEADER_SIZE];
 	int width, height, depth, channels;
@@ -77,7 +77,7 @@ void Image::loadFromTGA(const char *filePath)
 
 	file = fopen(filePath, "rb");
 	assert(file != NULL);
-	read_bytes(file, header, TGA_HEADER_SIZE);
+	ReadBytes(file, header, TGA_HEADER_SIZE);
 
 	width = header[12] | (header[13] << 8);
 	height = header[14] | (header[15] << 8);
@@ -91,10 +91,10 @@ void Image::loadFromTGA(const char *filePath)
 	assert(idlength == 0);
 	imgtype = header[2];
 	if (imgtype == 2 || imgtype == 3) {           /* uncompressed */
-		read_bytes(file, loadIMG.data(), loadIMG.data_size());
+		ReadBytes(file, loadIMG.data(), loadIMG.data_size());
 	}
 	else if (imgtype == 10 || imgtype == 11) {  /* run-length encoded */
-		load_tga(file, &loadIMG);
+		LoadTGA(file, &loadIMG);
 	}
 	else {
 		assert(0);
@@ -103,31 +103,31 @@ void Image::loadFromTGA(const char *filePath)
 
 	imgdesc = header[17];
 	if (imgdesc & 0x20) {
-		loadIMG.flipVertical();
+		loadIMG.FlipVertical();
 	}
 	if (imgdesc & 0x10) {
-		loadIMG.flipHorizontal();
+		loadIMG.FlipHorizontal();
 	}
 	
 	(*this) = loadIMG;
 }
 
-void Image::loadFromFile(const char *filePath)
+void Image::LoadFromFile(const char *filePath)
 {
-	const char *ext = get_extension(filePath);
+	const char *ext = GetExtension(filePath);
 	if (strcmp(ext, "tga") == 0) {
-		loadFromTGA(filePath);
+		LoadFromTGA(filePath);
 	}
 	else {
 		assert(0);
 	}
 }
 
-void Image::saveAsFile(const char *filePath) const
+void Image::SaveAsFile(const char *filePath) const
 {
-	const char *ext = get_extension(filePath);
+	const char *ext = GetExtension(filePath);
 	if (strcmp(ext, "tga") == 0) {
-		save_tga(this, filePath);
+		SaveTGA(this, filePath);
 	}
 	else {
 		assert(0);
@@ -138,46 +138,46 @@ void Image::saveAsFile(const char *filePath) const
 /* 
 *  image processing 
 */
-static inline void swap_byte(Byte *x, Byte *y)
+static inline void SwapByte(Byte *x, Byte *y)
 {
 	Byte t = *x;
 	*x = *y;
 	*y = t;
 }
 
-void Image::flipHorizontal() const
+void Image::FlipHorizontal() const
 {
 	int half_width = width_ / 2;
 	int row, col;
 	for (row = 0; row < height_; row++) {
 		for (col = 0; col < half_width; col++) {
 			int flipped_col = width_ - col - 1;
-			Byte *pixel1 = get_pixel(col, row);
-			Byte *pixel2 = get_pixel(flipped_col, row);
+			Byte *pixel1 = GetPixel(col, row);
+			Byte *pixel2 = GetPixel(flipped_col, row);
 			for (int k = 0; k < channels_; k++) {
-				swap_byte(&pixel1[k], &pixel2[k]);
+				SwapByte(&pixel1[k], &pixel2[k]);
 			}
 		}
 	}
 }
 
-void Image::flipVertical() const 
+void Image::FlipVertical() const 
 {
 	int half_height = height_ / 2;
 	int row, col;
 	for (row = 0; row < half_height; row++) {
 		for (col = 0; col < width_; col++) {
 			int flipped_row = height_ - row - 1;
-			Byte *pixel1 = get_pixel(col, row);
-			Byte *pixel2 = get_pixel(col, flipped_row);
+			Byte *pixel1 = GetPixel(col, row);
+			Byte *pixel2 = GetPixel(col, flipped_row);
 			for (int k = 0; k < channels_; k++) {
-				swap_byte(&pixel1[k], &pixel2[k]);
+				SwapByte(&pixel1[k], &pixel2[k]);
 			}
 		}
 	}
 }
 
-void Image::resize(int width, int height) 
+void Image::Resize(int width, int height) 
 {
 	assert(width > 0 && height > 0);
 	Image target(width, height, channels_);
@@ -195,19 +195,19 @@ void Image::resize(int width, int height)
 			float delta_r = mapped_r - (float)src_r0;
 			float delta_c = mapped_c - (float)src_c0;
 
-			Byte *pixel_00 = get_pixel(src_c0, src_r0);
-			Byte *pixel_01 = get_pixel(src_c1, src_r0);
-			Byte *pixel_10 = get_pixel(src_c0, src_r1);
-			Byte *pixel_11 = get_pixel(src_c1, src_r1);
-			Byte *pixel = target.get_pixel(dst_col, dst_row);
+			Byte *pixel_00 = GetPixel(src_c0, src_r0);
+			Byte *pixel_01 = GetPixel(src_c1, src_r0);
+			Byte *pixel_10 = GetPixel(src_c0, src_r1);
+			Byte *pixel_11 = GetPixel(src_c1, src_r1);
+			Byte *pixel = target.GetPixel(dst_col, dst_row);
 			for (int k = 0; k < channels_; k++) {
 				float v00 = pixel_00[k];  /* row 0, col 0 */
 				float v01 = pixel_01[k];  /* row 0, col 1 */
 				float v10 = pixel_10[k];  /* row 1, col 0 */
 				float v11 = pixel_11[k];  /* row 1, col 1 */
-				float v0 = lerp(v00, v01, delta_c);  /* row 0 */
-				float v1 = lerp(v10, v11, delta_c);  /* row 1 */
-				float value = lerp(v0, v1, delta_r);
+				float v0 = Lerp(v00, v01, delta_c);  /* row 0 */
+				float v1 = Lerp(v10, v11, delta_c);  /* row 1 */
+				float value = Lerp(v0, v1, delta_r);
 				pixel[k] = (Byte)(value + 0.5f);
 			}
 		}
@@ -216,7 +216,7 @@ void Image::resize(int width, int height)
 	(*this) = target;
 }
 
-void Image::reset() const 
+void Image::Reset() const 
 { 
 	memset(data_, 0, data_size()); 
 };

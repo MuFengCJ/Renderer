@@ -11,23 +11,23 @@ public:
 	App(const char* title, int width, int height);
 	~App();
 
-	void init() const;
-	void start() const;
+	void Init() const;
+	void Start() const;
+
 	void set_renderer(Renderer* renderer);
 	
 private:
-	static void update();
+	static void Update();
 
-	//reponse to user input of window, called by window
-	static void key_callback(Window *window, KeyCode key, bool pressed);
-	static void button_callback(Window *window, Button button, bool pressed);
-	static void scroll_callback(Window *window, float offset);
-	static void cursor_callback(Window* window, float xpos, float ypos);
-	static void resize_callback(Window* window, int width, int height);
+	//reponse to user input message, called by window
+	static void KeyCallback(Window *window, KeyCode key, bool pressed);
+	static void ButtonCallback(Window *window, Button button, bool pressed);
+	static void ScrollCallback(Window *window, float offset);
+	static void CursorCallback(Window* window, float xpos, float ypos);
+	static void ResizeCallback(Window* window, int width, int height);
 
-	static Window* window_;		//window to display
+	static Window* window_;		//window for display
 	static Renderer* renderer_;		//renderer
-
 };
 
 

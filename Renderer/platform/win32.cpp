@@ -6,9 +6,10 @@
 #include "../core/utils.h"
 
 
-/*************************************
-*  Window related functions 
-**************************************/
+static HWND handle_;
+static HDC memory_dc_;	//memory device context
+static Byte* back_buffer_;	//pre-rendered buffer; RGBA 4 channels, associated with memory_dc_, auto deleted by system
+
 #ifdef UNICODE
 static const wchar_t *WINDOW_CLASS_NAME = L"Class";
 static const wchar_t *WINDOW_ENTRY_NAME = L"Entry";
@@ -17,10 +18,8 @@ static const char *WINDOW_CLASS_NAME = "Class";
 static const char *WINDOW_ENTRY_NAME = "Entry";
 #endif
 
-/*
- * for virtual-key codes, see
- * https://docs.microsoft.com/en-us/windows/desktop/inputdev/virtual-key-codes
- */
+ // for virtual-key codes, see
+ // https://docs.microsoft.com/en-us/windows/desktop/inputdev/virtual-key-codes
 static void key_message_response(Window *window, WPARAM virtual_key, bool pressed) 
 {
 	KeyCode key;
@@ -34,8 +33,8 @@ static void key_message_response(Window *window, WPARAM virtual_key, bool presse
 	}
 	if (key < KEY_NUM) {
 		window->set_key_pressed(key, pressed);
-		if (window->callbacks().key_callback) {
-			window->callbacks().key_callback(window, key, pressed);
+		if (window->callbacks().KeyCallback) {
+			window->callbacks().KeyCallback(window, key, pressed);
 		}
 	}
 }
@@ -43,15 +42,15 @@ static void key_message_response(Window *window, WPARAM virtual_key, bool presse
 static void button_message_response(Window *window, Button button, bool pressed) 
 {
 	window->set_button_pressed(button, pressed);
-	if (window->callbacks().button_callback) {
-		window->callbacks().button_callback(window, button, pressed);
+	if (window->callbacks().ButtonCallback) {
+		window->callbacks().ButtonCallback(window, button, pressed);
 	}
 }
 
 static void scroll_message_response(Window *window, float offset) 
 {
-	if (window->callbacks().scroll_callback) {
-		window->callbacks().scroll_callback(window, offset);
+	if (window->callbacks().ScrollCallback) {
+		window->callbacks().ScrollCallback(window, offset);
 	}
 }
 
@@ -150,11 +149,35 @@ static HWND create_window(const char *title_, int width, int height)
 	return handle;
 }
 
-/*
- * for memory device context, see
- * https://docs.microsoft.com/en-us/windows/desktop/gdi/memory-device-contexts
- */
-void Window::init_buffer(int width, int height)
+
+Window::Window(const char *title, int width, int height)
+{
+	assert(width > 0 && height > 0);
+	width_ = width;
+	height_ = height;
+
+	register_class();
+
+	handle_ = create_window(title, width, height);
+	InitBuffer(width, height);
+	should_close_ = false;
+
+	SetProp(handle_, WINDOW_ENTRY_NAME, this);
+	ShowWindow(handle_, SW_SHOW);
+}
+
+Window::~Window()
+{
+	ShowWindow(handle_, SW_HIDE);
+	RemoveProp(handle_, WINDOW_ENTRY_NAME);
+
+	DeleteDC(memory_dc_);
+	DestroyWindow(handle_);
+}
+
+// for memory device context, see
+// https://docs.microsoft.com/en-us/windows/desktop/gdi/memory-device-contexts
+void Window::InitBuffer(int width, int height)
 {
 	Byte* data;
 
@@ -179,62 +202,33 @@ void Window::init_buffer(int width, int height)
 	back_buffer_ = data; //initialize back_buffer_ with system-allocated space
 }
 
-Window::Window(const char *title, int width, int height)
+void Window::ResetBuffer() const
 {
-	assert(width > 0 && height > 0);
-	width_ = width;
-	height_ = height;
-
-	register_class();
-
-	handle_ = create_window(title, width, height);
-	init_buffer(width, height);
-	should_close_ = false;
-
-	SetProp(handle_, WINDOW_ENTRY_NAME, this);
-	ShowWindow(handle_, SW_SHOW);
+	memset(back_buffer_, 0, width_ * height_ * 4);
 }
 
-Window::~Window()
-{
-	ShowWindow(handle_, SW_HIDE);
-	RemoveProp(handle_, WINDOW_ENTRY_NAME);
-
-	DeleteDC(memory_dc_);
-	DestroyWindow(handle_);
-}
-
-void Window::swap_buffer() const
+void Window::SwapBuffer() const
 {
 	HDC window_dc = GetDC(handle_);
 	BitBlt(window_dc, 0, 0, width_, height_, memory_dc_, 0, 0, SRCCOPY);
 	ReleaseDC(handle_, window_dc);
 }
 
-void Window::reset_buffer() const
+void Window::Display(Image *image) const
 {
-	memset(back_buffer_, 0, width_ * height_ * 4);
-}
-
-void Window::display(Image *image) const
-{
-	reset_buffer();
+	ResetBuffer();
 	blit_image_bgr(image, width_, height_, back_buffer_);
-	swap_buffer();
+	SwapBuffer();
 }
 
-void Window::display(FrameBuffer* framebuffer) const
+void Window::Display(FrameBuffer* framebuffer) const
 {
-	reset_buffer();
+	ResetBuffer();
 	blit_frame_bgr(framebuffer, width_, height_, back_buffer_);
-	swap_buffer();
+	SwapBuffer();
 }
 
-
-/*************************************
-*  input related functions 
-**************************************/
-void Window::poll_events() const
+void Window::PollEvents() const
 {
 	MSG message;
 	while (PeekMessage(&message, NULL, 0, 0, PM_REMOVE)) {
@@ -243,7 +237,7 @@ void Window::poll_events() const
 	}
 }
 
-void Window::cursor_pos(float &xpos, float &ypos) const
+void Window::CursorPos(float &xpos, float &ypos) const
 {
 	POINT point;
 	GetCursorPos(&point);
